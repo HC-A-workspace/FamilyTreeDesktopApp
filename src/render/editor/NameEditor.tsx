@@ -1,4 +1,4 @@
-import type { Name } from "../model/FundamentalData";
+import type { Name } from "../../model/FundamentalData";
 
 interface WithFamilyNameProps {
   name: Name;

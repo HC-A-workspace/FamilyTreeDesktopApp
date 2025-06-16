@@ -160,7 +160,7 @@ const App: React.FC = () => {
         personData.id = familyTree.getNextPersonId();
         familyTree
           .getPersonMap()
-          .set(personData.id, new Person(personData));
+          .set(personData.id, new Person(personData, familyTree.getShowBywords(), familyTree.getShowYears(), familyTree.getIsVertical()));
         familyTree.nextPersonIdCountUp();
       } else {
         const targetPerson = familyTree.findPersonById(

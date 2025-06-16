@@ -1,3 +1,4 @@
+import { FontData } from "../components/TextInformation";
 import { Queue, sameElementList, type Position } from "./FundamentalData";
 import { Marriage, type MarriageData } from "./Marriage";
 import { Person, type PersonData } from "./Person";
@@ -11,10 +12,30 @@ export class FamilyTree {
   private title: string = "家系図";
   private nextPersonId: number = 0;
   private nextMarriageId: number = 0;
-  public static NORMAL_FONT = "400 20px 'Yu Mincho'";
-  public static BOLD_FONT = "700 20px 'Yu Mincho'";
-  public static YEAR_FONT = "400 8px 'serif'";
-  public static BYWORDS_FONT = "400 8px 'serif'";
+  public static NORMAL_FONT: FontData = {
+    weight: 400,
+    size: 20,
+    family: ['Yu Mincho']  
+  }
+  public static BOLD_FONT: FontData = {
+    weight: 700,
+    size: 20,
+    family: ['Yu Mincho']
+  }
+  public static YEAR_FONT: FontData = {
+    weight: 400,
+    size: 8,
+    family: ['serif']
+  }
+  public static BYWORDS_FONT: FontData = {
+    weight: 400,
+    size: 8,
+    family: ['serif']
+  }
+  private isVertical = false;
+  private showBywords = true;
+  private showYears = true;
+
   private topY: number = 0;
   private bottomY: number = 0;
   private leftX: number = 0;
@@ -31,7 +52,7 @@ export class FamilyTree {
         ? []
         : people[0] instanceof Person
           ? (people as Person[]).map((p) => [p.getId(), p])
-          : (people as PersonData[]).map((p) => [p.id, new Person(p)])
+          : (people as PersonData[]).map((p) => [p.id, new Person(p, this.showBywords, this.showYears, this.isVertical)])
     );
 
     this.marriageMap = new Map(
@@ -63,7 +84,7 @@ export class FamilyTree {
           this.leftX = Math.min(this.leftX, person.getPosition().x);
           this.rightX = Math.max(this.rightX, person.getPosition().x);
         } else {
-          this.personMap.set(person.id, new Person(person));
+          this.personMap.set(person.id, new Person(person, this.showBywords, this.showYears, this.isVertical));
           this.topY = Math.min(this.topY, person.position.y);
           this.bottomY = Math.max(this.bottomY, person.position.y);
           this.leftX = Math.min(this.leftX, person.position.x);
@@ -98,6 +119,34 @@ export class FamilyTree {
     clone.leftX = this.leftX;
     clone.rightX = this.rightX;
     return clone;
+  }
+
+  getShowBywords() {
+    return this.showBywords;
+  }
+
+  getShowYears() {
+    return this.showYears;
+  }
+
+  setShowBywords(showBywords: boolean) {
+    if (this.showBywords !== showBywords) {
+      //TODO
+    }
+  }
+
+  setShowYears(showYears: boolean) {
+    if (this.showYears !== showYears) {
+      //TODO
+    }
+  }
+
+  getIsVertical() {
+    return this.isVertical;
+  }
+
+  setIsVertical(isVertical: boolean) {
+    this.isVertical = isVertical;
   }
 
   getNextPersonId() {

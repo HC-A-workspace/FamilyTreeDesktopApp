@@ -2,8 +2,8 @@ import type { FamilyTree } from "../../model/FamilyTree";
 import { nullPosition, type Position } from "../../model/FundamentalData";
 import type { Person } from "../../model/Person";
 import type {
-  HorizontalTextInformations,
-  VerticalTextInformations,
+  HorizontalTextInformation,
+  VerticalTextInformation,
 } from "../../components/TextInformation";
 
 
@@ -16,38 +16,6 @@ interface RectPosition {
 
 const lineWidth = 1;
 
-export function drawVerticalText(
-  ctx: CanvasRenderingContext2D,
-  info: VerticalTextInformations,
-  center: Position
-) {
-  ctx.fillStyle = info.getColor();
-  ctx.font = info.getFont();
-  ctx.textBaseline = "middle";
-  for (const c of info.getSingleTextInfos()) {
-    ctx.fillText(
-      c.text,
-      info.getRelativeCenter().x + c.relativeCenter.x + center.x - c.width / 2,
-      info.getRelativeCenter().y + c.relativeCenter.y + center.y
-    );
-  }
-}
-
-export function drawHorizontalText(
-  ctx: CanvasRenderingContext2D,
-  info: HorizontalTextInformations,
-  center: Position
-) {
-  ctx.fillStyle = info.getColor();
-  ctx.font = info.getFont();
-  ctx.textBaseline = "middle";
-  ctx.fillText(
-    info.getText(),
-    info.getRelativeCenter().x + center.x - info.getWidth() / 2,
-    info.getRelativeCenter().y + center.y
-  );
-}
-
 function drawNames(
   ctx: CanvasRenderingContext2D,
   persons: Map<number, Person>,
@@ -55,11 +23,7 @@ function drawNames(
 ) {
   const offset = 7;
   for (const [, person] of persons) {
-    const nameInfo = person.getNameTextInfo();
-    const bywordsInfo = person.getByWordsTextInfo();
-    const birthyearInfo = person.getBirthTextInfo();
-    const deathyearInfo = person.getDeathTextInfo();
-
+ 
     const width = person.getWidth();
     const height = person.getHeight();
     const center = person.getPosition();
@@ -78,16 +42,7 @@ function drawNames(
     ctx.fill();
     ctx.stroke();
 
-    drawVerticalText(ctx, nameInfo, center);
-    if (bywordsInfo !== undefined) {
-      drawVerticalText(ctx, bywordsInfo, center);
-    }
-    if (birthyearInfo !== undefined) {
-      drawHorizontalText(ctx, birthyearInfo, center);
-    }
-    if (deathyearInfo !== undefined) {
-      drawHorizontalText(ctx, deathyearInfo, center);
-    }
+    person.draw(ctx);
   }
 }
 

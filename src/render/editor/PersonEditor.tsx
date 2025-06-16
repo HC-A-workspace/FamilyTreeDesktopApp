@@ -5,8 +5,8 @@ import {
   OnlyNameInput,
   WithFamilyNameInput,
   WithTitleInput,
-} from "../../components/NameEditor";
-import ListEditor from "../../components/ListEditor";
+} from "./NameEditor";
+import ListEditor from "./ListEditor";
 
 const NameStyle = {
   WithFamilyname: 0,
@@ -442,14 +442,14 @@ const PersonEditor: React.FC = () => {
                   type="checkbox"
                   checked={
                     personData.birthday !== undefined &&
-                    personData.birthday.isBC === false
+                    personData.birthday.isBC
                   }
                   onChange={(e) =>
                     setPersonData({
                       ...personData,
                       birthday: {
                         ...personData.birthday,
-                        isBC: e.target.checked !== true,
+                        isBC: e.target.checked,
                       },
                     })
                   }
@@ -531,14 +531,14 @@ const PersonEditor: React.FC = () => {
                   type="checkbox"
                   checked={
                     personData.deathday !== undefined &&
-                    personData.deathday.isBC === false
+                    personData.deathday.isBC
                   }
                   onChange={(e) =>
                     setPersonData({
                       ...personData,
                       deathday: {
                         ...personData.deathday,
-                        isBC: e.target.checked !== true,
+                        isBC: e.target.checked,
                       },
                     })
                   }

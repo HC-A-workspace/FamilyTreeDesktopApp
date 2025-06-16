@@ -155,7 +155,7 @@ export class Person {
     }
     if (font instanceof HorizontalTextInformation) {
       this.birthText = font.clone();
-    } else if (this.data.birthday?.year !== undefined && this.isVertical && this.showYears) {
+    } else if (this.data.birthday?.year !== undefined && this.isVertical) {
       const prefix = this.data.birthday.isBC ? "前" : "";
       this.birthText = new HorizontalTextInformation(
         `${prefix}${this.data.birthday?.year}年 生`,
@@ -167,7 +167,7 @@ export class Person {
 
     if (deathText !== undefined) {
       this.deathText = deathText.clone();
-    } else if (this.data.deathday?.year !== undefined && this.isVertical && this.showYears) {
+    } else if (this.data.deathday?.year !== undefined && this.isVertical) {
       const prefix = this.data.deathday.isBC ? "前" : "";
       this.deathText = new HorizontalTextInformation(
         `${prefix}${this.data.deathday?.year}年 没`,
@@ -175,7 +175,7 @@ export class Person {
         "rgb(0, 0, 0)"
       );
     }
-    if (this.isVertical === false && this.showYears && this.birthText === undefined) {
+    if (this.isVertical === false && this.birthText === undefined) {
       if (this.data.birthday?.year !== undefined || this.data.deathday?.year !== undefined) {
         const birthPrefix = (this.data.birthday?.isBC === undefined || this.data.birthday.isBC === false) ? "" : "BC"
         const deathPrefix = (this.data.deathday?.isBC === undefined || this.data.deathday.isBC === false) ? "" : "BC"
@@ -190,7 +190,6 @@ export class Person {
     } else {
       this.adjustPosition();
     }
-    console.log("c", this.birthText?.getRelativeCenter().y);
   }
 
   public clone() {
@@ -205,7 +204,7 @@ export class Person {
     let widthOfUpper = this.nameText.getWidth();
     this.nameText.setRelativeCenter({x: 0, y: 0});
 
-    if (this.bywordsText !== undefined) {
+    if (this.bywordsText !== undefined && this.showBywords) {
       widthOfUpper += spacing + this.bywordsText.getWidth();
       if (this.nameText.getHeight() > this.bywordsText.getHeight()) {
         this.nameText.setRelativeCenter({
@@ -238,31 +237,33 @@ export class Person {
 
     let widthOfLower = 0;
     let heightOfLower = 0;
-    if (this.birthText !== undefined && this.deathText !== undefined) {
-      widthOfLower = Math.max(
-        this.birthText.getWidth(),
-        this.deathText.getWidth()
-      );
-      heightOfLower =
-        this.birthText.getHeight() +
-        spacing +
-        this.deathText.getHeight();
-      this.birthText.setRelativeCenter({
-        x: 0,
-        y: -(spacing + this.deathText.getHeight()) / 2,
-      });
-      this.deathText.setRelativeCenter({
-        x: 0,
-        y: (spacing + this.birthText.getHeight()) / 2,
-      });
-    } else if (this.birthText !== undefined) {
-      widthOfLower = this.birthText.getWidth();
-      heightOfLower = this.birthText.getHeight();
-      this.birthText.setRelativeCenter({ x: 0, y: 0 });
-    } else if (this.deathText !== undefined) {
-      widthOfLower = this.deathText.getWidth();
-      heightOfLower = this.deathText.getHeight();
-      this.deathText.setRelativeCenter({ x: 0, y: 0 });
+    if (this.showYears) {
+      if (this.birthText !== undefined && this.deathText !== undefined) {
+        widthOfLower = Math.max(
+          this.birthText.getWidth(),
+          this.deathText.getWidth()
+        );
+        heightOfLower =
+          this.birthText.getHeight() +
+          spacing +
+          this.deathText.getHeight();
+        this.birthText.setRelativeCenter({
+          x: 0,
+          y: -(spacing + this.deathText.getHeight()) / 2,
+        });
+        this.deathText.setRelativeCenter({
+          x: 0,
+          y: (spacing + this.birthText.getHeight()) / 2,
+        });
+      } else if (this.birthText !== undefined) {
+        widthOfLower = this.birthText.getWidth();
+        heightOfLower = this.birthText.getHeight();
+        this.birthText.setRelativeCenter({ x: 0, y: 0 });
+      } else if (this.deathText !== undefined) {
+        widthOfLower = this.deathText.getWidth();
+        heightOfLower = this.deathText.getHeight();
+        this.deathText.setRelativeCenter({ x: 0, y: 0 });
+      }
     }
     this.width = Math.max(widthOfUpper, widthOfLower);
 
@@ -289,7 +290,7 @@ export class Person {
 
     this.nameText.setRelativeCenter({x: 0, y: 0})
 
-    if (this.bywordsText !== undefined) {
+    if (this.bywordsText !== undefined && this.showBywords) {
       this.bywordsText.setRelativeCenter({x: 0, y: 0})
       if (this.width > this.bywordsText.getWidth()) {
         this.bywordsText.translate(-(this.width - this.bywordsText.getWidth()) / 2, 0)
@@ -302,7 +303,7 @@ export class Person {
       this.height += spacing + this.bywordsText.getHeight();
     }
 
-    if (this.birthText !== undefined) {
+    if (this.birthText !== undefined && this.showYears) {
       this.birthText.setRelativeCenter({x: 0, y: 0});
       this.birthText.translate(0, (spacing + this.height) / 2);
       this.nameText.translate(0, -(spacing + this.birthText.getHeight()) / 2);
@@ -329,6 +330,25 @@ export class Person {
     } else {
       this.adjustPositionHorizontally();
     }
+  }
+
+  setShowBywords(flag: boolean) {
+    if (this.showBywords === flag) return;
+    this.showBywords = flag;
+    this.adjustPosition();
+  }
+
+  setShowYears(flag: boolean) {
+    if (this.showYears === flag) return;
+    this.showYears = flag;
+    this.adjustPosition();
+  }
+
+  setIsVertical(flag: boolean) {
+    if (this.isVertical === flag) return;
+    this.isVertical = flag;
+    this.update(this.data);
+    this.adjustPosition();
   }
 
   public getNameTextInfo(): TextInformation {
@@ -358,7 +378,7 @@ export class Person {
     } else {
       this.nameText = new HorizontalTextInformation(displayName(this.data.name), this.nameText.getFont(), this.nameText.getColor());
     }
-    if (this.data.bywords !== "" && this.showBywords) {
+    if (this.data.bywords !== "") {
       if (this.isVertical) {
         this.bywordsText = new VerticalTextInformation(this.data.bywords, FamilyTree.BYWORDS_FONT, "rgb(0, 0, 0)")
       } else {
@@ -368,7 +388,7 @@ export class Person {
       this.bywordsText = undefined;
     }
     if (this.isVertical) {
-      if (this.data.birthday?.year !== undefined && this.showYears) {
+      if (this.data.birthday?.year !== undefined) {
         const prefix = this.data.birthday.isBC ? "前" : "";
         this.birthText = new HorizontalTextInformation(
           `${prefix}${this.data.birthday?.year}年 生`,
@@ -378,7 +398,7 @@ export class Person {
       } else {
         this.birthText = undefined;
       }
-      if (this.data.deathday?.year !== undefined && this.showYears) {
+      if (this.data.deathday?.year !== undefined) {
         const prefix = this.data.deathday.isBC ? "前" : "";
         this.deathText = new HorizontalTextInformation(
           `${prefix}${this.data.deathday?.year}年 没`,
@@ -389,7 +409,7 @@ export class Person {
         this.deathText = undefined;
       }
     } else {
-      if (this.data.birthday?.year !== undefined || this.data.deathday?.year !== undefined && this.showYears) {
+      if (this.data.birthday?.year !== undefined || this.data.deathday?.year !== undefined) {
         const birthPrefix = (this.data.birthday?.isBC === undefined || this.data.birthday.isBC === false) ? "" : "BC"
         const deathPrefix = (this.data.deathday?.isBC === undefined || this.data.deathday.isBC === false) ? "" : "BC"
         const birth = birthPrefix + (this.data.birthday?.year ?? "?")
@@ -641,13 +661,13 @@ export class Person {
 
   draw(ctx: CanvasRenderingContext2D) {
     this.nameText.draw(ctx, this.data.position);
-    if (this.bywordsText !== undefined) {
+    if (this.bywordsText !== undefined && this.showBywords) {
       this.bywordsText.draw(ctx, this.data.position);
     }
-    if (this.birthText !== undefined) {
+    if (this.birthText !== undefined && this.showYears) {
       this.birthText.draw(ctx, this.data.position);
     }
-    if (this.deathText !== undefined) {
+    if (this.deathText !== undefined && this.showYears) {
       this.deathText.draw(ctx, this.data.position);
     }
   }

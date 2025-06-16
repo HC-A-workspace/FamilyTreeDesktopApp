@@ -19,6 +19,9 @@ declare global {
       onMoveWithDescents: (callback: (isMovingWithDescents: boolean) => void) => void;
       onAllClear: (callback: () => void) => void;
       onShowGrid: (callback: (isShowingGrid: boolean) => void) => void;
+      onShowBywords: (callback: (isShowingBywords: boolean) => void) => void;
+      onShowYears: (callback: (isShowingYears: boolean) => void) => void;
+      onIsVertical: (callback: (isVertical: boolean) => void) => void;
     };
   }
 }

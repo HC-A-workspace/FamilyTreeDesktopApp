@@ -96,7 +96,6 @@ app.whenReady().then(() => {
         {
           "label": "子孫も移動",
           type: "checkbox",
-          checked: true,
           accelerator: "Ctrl+H",
           click: (e) => {
             mainWindow.webContents.send("move-with-descents", e.checked);
@@ -133,7 +132,7 @@ app.whenReady().then(() => {
           checked: true,
           accelerator: "Ctrl+B",
           click: (e) => {
-            mainWindow.webContents.send("show-dates", e.checked);
+            mainWindow.webContents.send("show-years", e.checked);
           }
         },
         {
@@ -142,7 +141,16 @@ app.whenReady().then(() => {
           checked: true,
           accelerator: "Ctrl+T",
           click: (e) => {
-            mainWindow.webContents.send("show-title", e.checked);
+            mainWindow.webContents.send("show-bywords", e.checked);
+          }
+        },
+        {
+          "label": "縦書き",
+          type: "checkbox",
+          checked: true,
+          accelerator: "Ctrl+Shift+V",
+          click: (e) => {
+            mainWindow.webContents.send("is-vertical", e.checked);
           }
         },
       ]

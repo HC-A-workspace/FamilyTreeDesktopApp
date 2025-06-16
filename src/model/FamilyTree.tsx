@@ -32,7 +32,7 @@ export class FamilyTree {
     size: 8,
     family: ['serif']
   }
-  private isVertical = false;
+  private isVertical = true;
   private showBywords = true;
   private showYears = true;
 
@@ -129,24 +129,35 @@ export class FamilyTree {
     return this.showYears;
   }
 
-  setShowBywords(showBywords: boolean) {
-    if (this.showBywords !== showBywords) {
-      //TODO
-    }
-  }
-
-  setShowYears(showYears: boolean) {
-    if (this.showYears !== showYears) {
-      //TODO
-    }
-  }
-
   getIsVertical() {
     return this.isVertical;
   }
 
+  setShowBywords(showBywords: boolean) {
+    if (this.showBywords !== showBywords) {
+      for (const [, person] of this.personMap) {
+        person.setShowBywords(showBywords);
+      }
+      this.showBywords = showBywords;
+    }
+  }  
+
+  setShowYears(showYears: boolean) {
+    if (this.showYears !== showYears) {
+      for (const [, person] of this.personMap) {
+        person.setShowYears(showYears);
+      }
+      this.showYears = showYears;
+    }  
+  }  
+
   setIsVertical(isVertical: boolean) {
-    this.isVertical = isVertical;
+    if (this.isVertical !== isVertical) {
+      for (const [, person] of this.personMap) {
+        person.setIsVertical(isVertical);
+      }
+      this.isVertical = isVertical;
+    }  
   }
 
   getNextPersonId() {

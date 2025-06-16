@@ -146,6 +146,7 @@ const App: React.FC = () => {
   };
 
   const selectedPerson = useRef<Person | undefined>(undefined);
+  const selectedOffset = useRef<Position>({x: 0, y: 0})
 
 
   useEffect(() => {
@@ -204,7 +205,22 @@ const App: React.FC = () => {
       setTitle(familyTree.getTitle());
       save();
       forceUpdate();
-    })
+    });
+    window.electronAPI?.onShowBywords((flag) => {
+      familyTree.setShowBywords(flag);
+      save();
+      forceUpdate();
+    });
+    window.electronAPI?.onShowYears((flag) => {
+      familyTree.setShowYears(flag);
+      save();
+      forceUpdate();
+    });
+    window.electronAPI?.onIsVertical((flag) => {
+      familyTree.setIsVertical(flag);
+      save();
+      forceUpdate();
+    });
   }, [])
 
   useEffect(() => {
@@ -388,13 +404,18 @@ const App: React.FC = () => {
     setContextMenuVisible(false);
     setPersonMenuVisible(false);
     setIsDragging(true);
+    const unscaledMousePos = unscaledPosition(pos, offset, scale)
     movingPerson.current = familyTree.getSelectedPerson(
-      unscaledPosition(pos, offset, scale)
+      unscaledMousePos
     );
     if (movingPerson.current !== undefined) {
       movingPerson.current.changeFont(FamilyTree.BOLD_FONT);
       if (moveWithDesents) {
         movingDesentsRef.current = familyTree.getAllDescents(movingPerson.current);
+      }
+      selectedOffset.current = {
+        x: unscaledMousePos.x - movingPerson.current.getX(),
+        y: unscaledMousePos.y - movingPerson.current.getY()
       }
     }
     dragStart.current = { x: pos.x - offset.x, y: pos.y - offset.y };
@@ -413,8 +434,8 @@ const App: React.FC = () => {
     } else {
       const unscaledPos = unscaledPosition(pos, offset, scale);
       const unscaledOffset: Position = {
-        x: unscaledPos.x - movingPerson.current.getX(),
-        y: unscaledPos.y - movingPerson.current.getY()
+        x: unscaledPos.x - movingPerson.current.getX() - selectedOffset.current.x,
+        y: unscaledPos.y - movingPerson.current.getY() - selectedOffset.current.y
       }
       movingPerson.current.addOffset(unscaledOffset, 0, 0, 0);
       if (moveWithDesents) {

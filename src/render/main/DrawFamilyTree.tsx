@@ -525,8 +525,8 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
 
 function drawRuler(ctx: CanvasRenderingContext2D, rect: RectPosition, ticks: {height: number, text: string}[], scale: number) {
   let tick = 1;
-  const minSize = 70;
-  const multi = 8;
+  const minSize = 80;
+  const multi = 10;
   while(true) {
     if (tick * multi * scale > minSize / 2.5) {
       break;

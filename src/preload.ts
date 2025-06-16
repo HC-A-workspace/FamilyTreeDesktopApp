@@ -20,4 +20,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
   onMoveWithDescents: (callback: (isMovingWithDescents: boolean) => void) => ipcRenderer.on("move-with-descents", (_, flag) => callback(flag)),
   onAllClear: (callback: () => void) => ipcRenderer.on("all-clear", (_) => callback()),
   onShowGrid: (callback: (isShowingGrid: boolean) => void) => ipcRenderer.on("show-grids", (_, flag) => callback(flag)),
+  onShowBywords: (callback: (isShowingBywords: boolean) => void) => ipcRenderer.on("show-bywords", (_, flag) => callback(flag)),
+  onShowYears: (callback: (isShowingYears: boolean) => void) => ipcRenderer.on("show-years", (_, flag) => callback(flag)),
+  onIsVertical: (callback: (isVertical: boolean) => void) => ipcRenderer.on("is-vertical", (_, flag) => callback(flag)),
 })

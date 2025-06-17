@@ -26,9 +26,8 @@ function drawNames(
  
     const width = person.getWidth();
     const height = person.getHeight();
-    const center = person.getPosition();
-    const x = center.x - width / 2;
-    const y = center.y - height / 2;
+    const x = person.getLeftX();
+    const y = person.getTopY();
 
     if (x > rect.right || x + width < rect.left || y > rect.bottom || y + height < rect.top) {
       continue
@@ -148,22 +147,22 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
       children.length + adoptedChildren.length > 0
         ? {
             x:
-              (children.reduce((acc, p) => acc + p.getX(), 0) +
-                adoptedChildren.reduce((acc, p) => acc + p.getX(), 0)) /
+              (children.reduce((acc, p) => acc + p.getCenterX(), 0) +
+                adoptedChildren.reduce((acc, p) => acc + p.getCenterX(), 0)) /
               (children.length + adoptedChildren.length),
             y:
               Math.min(
-                ...children.map((p) => p.getY() - p.getHeight() / 2),
+                ...children.map((p) => p.getTopY()),
                 ...adoptedChildren.map(
-                  (p) => p.getY() - p.getHeight() / 2 - margin / 2
+                  (p) => p.getTopY() - margin / 2
                 )
               ) - margin,
           }
         : nullPosition();
 
     if (parents.length === 2) {
-      upper.y = Math.max(...parents.map((p) => p.getY()));
-      const sorted = parents.sort((p1, p2) => p1.getX() - p2.getX());
+      upper.y = Math.max(...parents.map((p) => p.getCenterY()));
+      const sorted = parents.sort((p1, p2) => p1.getCenterX() - p2.getCenterX());
       const maxTopY = Math.max(sorted[0].getTopY(), sorted[1].getTopY());
       const minBottomY = Math.min(
         sorted[0].getBottomY(),
@@ -185,21 +184,21 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
         upper.y = h.y;
         drawHorizontal(ctx, h);
       } else if (sorted[1].getLeftX() - sorted[0].getRightX() > 2 * margin) {
-        if (sorted[0].getY() > sorted[1].getY()) {
+        if (sorted[0].getCenterY() > sorted[1].getCenterY()) {
           const h1: Horizontal = {
-            y: sorted[0].getY(),
+            y: sorted[0].getCenterY(),
             x1: sorted[0].getRightX() + offset,
             x2: sorted[1].getLeftX() - margin,
             isDouble: true,
           };
           const v: Vertical = {
             x: sorted[1].getLeftX() - margin,
-            y1: sorted[0].getY(),
-            y2: sorted[1].getY(),
+            y1: sorted[0].getCenterY(),
+            y2: sorted[1].getCenterY(),
             isDouble: true,
           };
           const h2: Horizontal = {
-            y: sorted[1].getY(),
+            y: sorted[1].getCenterY(),
             x1: sorted[1].getLeftX() - margin,
             x2: sorted[1].getLeftX() - offset,
             isDouble: true,
@@ -211,19 +210,19 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
           drawHorizontal(ctx, h2);
         } else {
           const h1: Horizontal = {
-            y: sorted[0].getY(),
+            y: sorted[0].getCenterY(),
             x1: sorted[0].getRightX() + offset,
             x2: sorted[0].getRightX() + margin,
             isDouble: true,
           };
           const v: Vertical = {
             x: sorted[0].getRightX() + margin,
-            y1: sorted[0].getY(),
-            y2: sorted[1].getY(),
+            y1: sorted[0].getCenterY(),
+            y2: sorted[1].getCenterY(),
             isDouble: true,
           };
           const h2: Horizontal = {
-            y: sorted[1].getY(),
+            y: sorted[1].getCenterY(),
             x1: sorted[0].getRightX() + margin,
             x2: sorted[1].getLeftX() - offset,
             isDouble: true,
@@ -235,21 +234,21 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
           drawHorizontal(ctx, h2);
         }
       } else {
-        if (sorted[0].getY() > sorted[1].getY()) {
+        if (sorted[0].getCenterY() > sorted[1].getCenterY()) {
           const h1: Horizontal = {
-            y: sorted[0].getY(),
+            y: sorted[0].getCenterY(),
             x1: sorted[0].getRightX() + offset,
             x2: sorted[1].getRightX() + margin,
             isDouble: true,
           };
           const v: Vertical = {
             x: sorted[1].getRightX() + margin,
-            y1: sorted[0].getY(),
-            y2: sorted[1].getY(),
+            y1: sorted[0].getCenterY(),
+            y2: sorted[1].getCenterY(),
             isDouble: true,
           };
           const h2: Horizontal = {
-            y: sorted[1].getY(),
+            y: sorted[1].getCenterY(),
             x1: sorted[1].getRightX() + margin,
             x2: sorted[1].getRightX() + offset,
             isDouble: true,
@@ -261,19 +260,19 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
           drawHorizontal(ctx, h2);
         } else {
           const h1: Horizontal = {
-            y: sorted[0].getY(),
+            y: sorted[0].getCenterY(),
             x1: sorted[0].getLeftX() - offset,
             x2: sorted[0].getLeftX() - margin,
             isDouble: true,
           };
           const v: Vertical = {
             x: sorted[0].getLeftX() - margin,
-            y1: sorted[0].getY(),
-            y2: sorted[1].getY(),
+            y1: sorted[0].getCenterY(),
+            y2: sorted[1].getCenterY(),
             isDouble: true,
           };
           const h2: Horizontal = {
-            y: sorted[1].getY(),
+            y: sorted[1].getCenterY(),
             x1: sorted[0].getLeftX() - margin,
             x2: sorted[1].getLeftX() - offset,
             isDouble: true,
@@ -290,11 +289,11 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
     const childrenX = [
       ...children.map((p) =>
         p.getAdoptedParentMarriageId() === undefined
-          ? p.getX()
-          : p.getX() - margin / 3
+          ? p.getCenterX()
+          : p.getCenterX() - margin / 3
       ),
       ...adoptedChildren.map((p) =>
-        p.getParentMarriageId() === undefined ? p.getX() : p.getX() + margin / 3
+        p.getParentMarriageId() === undefined ? p.getCenterX() : p.getCenterX() + margin / 3
       ),
     ];
 
@@ -304,7 +303,7 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
     if (parents.length > 0 && children.length + adoptedChildren.length > 0) {
       const isDouble = children.length === 0 && adoptedChildren.length === 1;
       if (parents.length === 1) {
-        const parentX = parents[0].getX();
+        const parentX = parents[0].getCenterX();
         const parentLowerY = parents[0].getBottomY();
         if (parentLowerY + margin > lower.y) {
           const midX = (parentX + lower.x) / 2;
@@ -495,8 +494,8 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
       const v: Vertical = {
         x:
           c.getAdoptedParentMarriageId() === undefined
-            ? c.getX()
-            : c.getX() - margin / 3,
+            ? c.getCenterX()
+            : c.getCenterX() - margin / 3,
         y1: lower.y,
         y2: c.getTopY() - offset,
         isDouble: false,
@@ -508,8 +507,8 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
       const v: Vertical = {
         x:
           c.getParentMarriageId() === undefined
-            ? c.getX()
-            : c.getX() + margin / 3,
+            ? c.getCenterX()
+            : c.getCenterX() + margin / 3,
         y1: lower.y,
         y2: c.getTopY() - offset,
         isDouble: true,

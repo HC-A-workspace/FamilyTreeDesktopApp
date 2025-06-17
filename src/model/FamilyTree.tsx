@@ -66,10 +66,10 @@ export class FamilyTree {
     if (people.length > 0) {
       this.personMap = new Map();
       if (people[0] instanceof Person) {
-        this.topY = people[0].getPosition().y;
-        this.bottomY = people[0].getPosition().y;
-        this.leftX = people[0].getPosition().x;
-        this.rightX = people[0].getPosition().x;
+        this.topY = people[0].getTopY();
+        this.bottomY = people[0].getBottomY();
+        this.leftX = people[0].getLeftX();
+        this.rightX = people[0].getRightX();
       } else {
         this.topY = people[0].position.y;
         this.bottomY = people[0].position.y;
@@ -79,10 +79,10 @@ export class FamilyTree {
       for (const person of people) {
         if (person instanceof Person) {
           this.personMap.set(person.getId(), person);
-          this.topY = Math.min(this.topY, person.getPosition().y);
-          this.bottomY = Math.max(this.bottomY, person.getPosition().y);
-          this.leftX = Math.min(this.leftX, person.getPosition().x);
-          this.rightX = Math.max(this.rightX, person.getPosition().x);
+          this.topY = Math.min(this.topY, person.getTopY());
+          this.bottomY = Math.max(this.bottomY, person.getBottomY());
+          this.leftX = Math.min(this.leftX, person.getLeftX());
+          this.rightX = Math.max(this.rightX, person.getRightX());
         } else {
           this.personMap.set(person.id, new Person(person, this.showBywords, this.showYears, this.isVertical));
           this.topY = Math.min(this.topY, person.position.y);
@@ -344,7 +344,7 @@ export class FamilyTree {
   normalizeId() {
     for (const m of this.marriageMap.values()) {
       const sortedChildren = this.findChildrenOfMarriage(m.getId()).sort(
-        (c1, c2) => c2.getX() - c1.getX()
+        (c1, c2) => c2.getCenterX() - c1.getCenterX()
       );
       m.raw().childrenIds = sortedChildren.map((c) => c.getId());
     }

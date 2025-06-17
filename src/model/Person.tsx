@@ -200,84 +200,59 @@ export class Person {
   private adjustPositionVertically() {
     const spacing = FamilyTree.NORMAL_FONT.size / 4;
 
-    let heightofUpper = this.nameText.getHeight();
+    let heightOfUpper = this.nameText.getHeight();
     let widthOfUpper = this.nameText.getWidth();
-    this.nameText.setRelativeCenter({x: 0, y: 0});
+    this.nameText.setRelativeUL({x: 0, y: 0});
 
     if (this.bywordsText !== undefined && this.showBywords) {
+      this.bywordsText.setRelativeUL({x: this.nameText.getWidth() + spacing, y: 0})
       widthOfUpper += spacing + this.bywordsText.getWidth();
-      if (this.nameText.getHeight() > this.bywordsText.getHeight()) {
-        this.nameText.setRelativeCenter({
-          x: -(spacing + this.bywordsText.getWidth()) / 2,
-          y: 0,
-        });
-        this.bywordsText.setRelativeCenter({
-          x: (spacing + this.nameText.getWidth()) / 2,
-          y:
-            -(
-              this.nameText.getHeight() - this.bywordsText.getHeight()
-            ) / 2,
-        });
-      } else {
-        heightofUpper = this.bywordsText.getHeight();
-        this.nameText.setRelativeCenter({
-          x: -(spacing + this.bywordsText.getWidth()) / 2,
-          y:
-            -(
-              this.bywordsText.getHeight() - this.nameText.getHeight()
-            ) / 2,
-        });
-        this.bywordsText.setRelativeCenter({
-          x: (spacing + this.nameText.getWidth()) / 2,
-          y: 0,
-        });
-      }
+      heightOfUpper = Math.max(heightOfUpper, this.bywordsText.getHeight());
     }
-    this.height = heightofUpper;
 
     let widthOfLower = 0;
     let heightOfLower = 0;
     if (this.showYears) {
       if (this.birthText !== undefined && this.deathText !== undefined) {
-        widthOfLower = Math.max(
-          this.birthText.getWidth(),
-          this.deathText.getWidth()
-        );
-        heightOfLower =
-          this.birthText.getHeight() +
-          spacing +
-          this.deathText.getHeight();
-        this.birthText.setRelativeCenter({
-          x: 0,
-          y: -(spacing + this.deathText.getHeight()) / 2,
-        });
-        this.deathText.setRelativeCenter({
-          x: 0,
-          y: (spacing + this.birthText.getHeight()) / 2,
-        });
+        this.birthText.setRelativeUL({x: 0, y: 0});
+        heightOfLower = this.birthText.getHeight();
+        this.deathText.setRelativeUL({x: 0, y: heightOfLower + spacing});
+        heightOfLower += spacing + this.deathText.getHeight();
+        widthOfLower = Math.max(this.birthText.getWidth(), this.deathText.getWidth());
       } else if (this.birthText !== undefined) {
         widthOfLower = this.birthText.getWidth();
         heightOfLower = this.birthText.getHeight();
-        this.birthText.setRelativeCenter({ x: 0, y: 0 });
+        this.birthText.setRelativeUL({ x: 0, y: 0 });
       } else if (this.deathText !== undefined) {
         widthOfLower = this.deathText.getWidth();
         heightOfLower = this.deathText.getHeight();
-        this.deathText.setRelativeCenter({ x: 0, y: 0 });
+        this.deathText.setRelativeUL({ x: 0, y: 0 });
       }
     }
     this.width = Math.max(widthOfUpper, widthOfLower);
+    this.height = heightOfUpper;
 
     if (heightOfLower !== 0) {
       this.height += spacing + heightOfLower;
-      this.nameText.translate(0, -(spacing + heightOfLower) / 2);
-      if (this.bywordsText !== undefined) {
-        this.bywordsText.translate(0, -(spacing + heightOfLower) / 2);
-      }
-      if (this.birthText !== undefined) {
-        this.birthText.translate(0, (spacing + heightofUpper) / 2);
-      }
-      if (this.deathText !== undefined) {
-        this.deathText.translate(0, (spacing + heightofUpper) / 2);
+      const diffWidth = widthOfUpper - widthOfLower
+      if (diffWidth > 0) {
+        if (this.birthText !== undefined && this.showYears) {
+          this.birthText.translate(diffWidth / 2, heightOfUpper + spacing);
+        }
+        if (this.deathText !== undefined && this.showYears) {
+          this.deathText.translate(diffWidth / 2, heightOfUpper + spacing);
+        }        
+      } else {
+        this.nameText.translate(-diffWidth / 2, 0);
+        if (this.bywordsText !== undefined && this.showBywords) {
+          this.bywordsText.translate(-diffWidth / 2, 0)
+        }
+        if (this.birthText !== undefined && this.showYears) {
+          this.birthText.translate(0, heightOfUpper + spacing);
+        }
+        if (this.deathText !== undefined && this.showYears) {
+          this.deathText.translate(0, heightOfUpper + spacing);
+        }
       }
     }
   }
@@ -288,39 +263,28 @@ export class Person {
 
     const spacing = FamilyTree.NORMAL_FONT.size / 4;
 
-    this.nameText.setRelativeCenter({x: 0, y: 0})
+    this.nameText.setRelativeUL({x: 0, y: 0})
 
     if (this.bywordsText !== undefined && this.showBywords) {
-      this.bywordsText.setRelativeCenter({x: 0, y: 0})
-      if (this.width > this.bywordsText.getWidth()) {
-        this.bywordsText.translate(-(this.width - this.bywordsText.getWidth()) / 2, 0)
-      } else {
-        this.nameText.translate(-(this.bywordsText.getWidth() - this.width) / 2, 0)
-        this.width = this.bywordsText.getWidth();
-      }
-      this.bywordsText.translate(0, -(spacing + this.nameText.getHeight()) / 2);
-      this.nameText.translate(0, (spacing + this.bywordsText.getHeight()) / 2)
+      this.bywordsText.setRelativeUL({x: 0, y: 0})
+      this.nameText.translate(0, this.bywordsText.getHeight() + spacing);
       this.height += spacing + this.bywordsText.getHeight();
+      this.width = Math.max(this.width, this.bywordsText.getWidth());
     }
 
     if (this.birthText !== undefined && this.showYears) {
-      this.birthText.setRelativeCenter({x: 0, y: 0});
-      this.birthText.translate(0, (spacing + this.height) / 2);
-      this.nameText.translate(0, -(spacing + this.birthText.getHeight()) / 2);
-      if (this.bywordsText !== undefined) {
-        this.bywordsText.translate(0, -(spacing + this.birthText.getHeight()) / 2);
+      this.birthText.setRelativeUL({x: 0, y: 0});
+      this.birthText.translate(0, this.height + spacing);
+      const diffWidth = this.width - this.birthText.getWidth();
+      if (diffWidth > 0) {
+        this.birthText.translate(diffWidth, 0)
+      } else {
+        this.nameText.translate(-diffWidth, 0);
+        if (this.bywordsText !== undefined && this.showBywords) {
+          this.bywordsText.translate(-diffWidth, 0)
+        }
       }
       this.height += spacing + this.birthText.getHeight();
-
-      if (this.birthText.getWidth() > this.width) {
-        this.nameText.translate((this.birthText.getWidth() - this.width) / 2, 0);
-        if (this.bywordsText !== undefined) {
-          this.bywordsText.translate((this.birthText.getWidth() - this.width) / 2, 0);
-        }
-        this.width = this.birthText.getWidth();
-      } else {
-        this.birthText.translate((this.width - this.birthText.getWidth()) / 2, 0);
-      }
     }
   }
 
@@ -465,28 +429,28 @@ export class Person {
     return this.data.deathday;
   }
 
-  getX(): number {
-    return this.data.position.x;
+  getCenterX(): number {
+    return this.data.position.x + this.width / 2;
   }
 
-  getY(): number {
-    return this.data.position.y;
+  getCenterY(): number {
+    return this.data.position.y + this.height / 2;
   }
 
   getTopY(): number {
-    return this.getY() - this.height / 2;
+    return this.data.position.y;
   }
 
   getBottomY(): number {
-    return this.getY() + this.height / 2;
+    return this.data.position.y + this.height;
   }
 
   getLeftX(): number {
-    return this.getX() - this.width / 2;
+    return this.data.position.x;
   }
 
   getRightX(): number {
-    return this.getX() + this.width / 2;
+    return this.data.position.x + this.width;
   }
 
   getWidth() {
@@ -565,10 +529,6 @@ export class Person {
 
   isKnownDeththyear() {
     return this.data.deathday?.year !== undefined;
-  }
-
-  public getPosition(): Position {
-    return this.data.position;
   }
 
   public setPosition(position: Position) {

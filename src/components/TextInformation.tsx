@@ -5,7 +5,7 @@ interface SingleTextInformation {
   text: string;
   width: number;
   height: number;
-  relativeCenter: Position;
+  relativeUL: Position;
 }
 
 function singleTextInformationClone(
@@ -15,7 +15,7 @@ function singleTextInformationClone(
     text: clone.text,
     width: clone.width,
     height: clone.height,
-    relativeCenter: { ...clone.relativeCenter },
+    relativeUL: {...clone.relativeUL}
   };
 }
 
@@ -34,7 +34,7 @@ export abstract class TextInformation {
     family: ['Yu Mincho']
   };
   protected color = "";
-  protected relativeCenter: Position = {x: 0, y: 0}
+  protected relativeUL: Position = {x: 0, y: 0}
   protected text = "";
   protected singleTextInfos: SingleTextInformation[] = []
 
@@ -77,13 +77,13 @@ export abstract class TextInformation {
     return this.color;
   }
 
-  getRelativeCenter(): Position {
-    return { ...this.relativeCenter };
+  getRelativeUL(): Position {
+    return { ...this.relativeUL };
   }
 
-  setRelativeCenter(center: Position) {
-    this.relativeCenter.x = center.x;
-    this.relativeCenter.y = center.y;
+  setRelativeUL(center: Position) {
+    this.relativeUL.x = center.x;
+    this.relativeUL.y = center.y;
   }
 
   setColor(color: string) {
@@ -91,8 +91,8 @@ export abstract class TextInformation {
   }
 
   translate(dx: number, dy: number) {
-    this.relativeCenter.x += dx;
-    this.relativeCenter.y += dy;
+    this.relativeUL.x += dx;
+    this.relativeUL.y += dy;
   }
 
   getText() {
@@ -132,7 +132,9 @@ export abstract class TextInformation {
 
   protected abstract align(): void;
 
+
   abstract draw(ctx: CanvasRenderingContext2D, position: Position): void;
+
 }
 
 export class VerticalTextInformation extends TextInformation{
@@ -153,28 +155,24 @@ export class VerticalTextInformation extends TextInformation{
         text: c,
         width: width,
         height: height,
-        relativeCenter: { x: 0, y: this.height + height / 2 },
+        relativeUL: { x: 0, y: this.height },
       };
       this.singleTextInfos.push(char);
       this.height += height + spacing;
       this.width = Math.max(this.width, width);
     }
     this.height -= spacing;
-
-    for (const char of this.singleTextInfos) {
-      char.relativeCenter.y += -this.height / 2;
-    }
   }
 
   draw(ctx: CanvasRenderingContext2D, position: Position): void {
     ctx.fillStyle = this.color;
     ctx.font = this.getFont();
-    ctx.textBaseline = "middle";
+    ctx.textBaseline = "top";
     for (const c of this.singleTextInfos) {
       ctx.fillText(
         c.text,
-        this.relativeCenter.x + c.relativeCenter.x + position.x - c.width / 2,
-        this.relativeCenter.y + c.relativeCenter.y + position.y
+        this.relativeUL.x + c.relativeUL.x + position.x,
+        this.relativeUL.y + c.relativeUL.y + position.y
       );
     }
   }
@@ -190,10 +188,10 @@ export class VerticalTextInformation extends TextInformation{
     clone.height = this.height;
     clone.font = this.font;
     clone.color = this.color;
-    clone.relativeCenter = { ...this.relativeCenter };
     clone.singleTextInfos = [
       ...this.singleTextInfos.map((info) => singleTextInformationClone(info)),
     ];
+    clone.relativeUL = {...this.relativeUL}; 
     return clone;
   }
 }
@@ -207,15 +205,15 @@ export class HorizontalTextInformation extends TextInformation{
         metric.actualBoundingBoxAscent - metric.actualBoundingBoxDescent;
       this.width = metric.width;
   }
-
+  
   draw(ctx: CanvasRenderingContext2D, position: Position): void {
     ctx.fillStyle = this.color;
     ctx.font = this.getFont();
-    ctx.textBaseline = "middle";
+    ctx.textBaseline = "top";
     ctx.fillText(
       this.text,
-      this.relativeCenter.x + position.x - this.width / 2,
-      this.relativeCenter.y + position.y
+      this.relativeUL.x + position.x,
+      this.relativeUL.y + position.y
     );
   }
 
@@ -226,7 +224,7 @@ export class HorizontalTextInformation extends TextInformation{
     clone.color = this.color;
     clone.width = this.width;
     clone.height = this.height;
-    clone.relativeCenter = { ...this.relativeCenter };
+    clone.relativeUL = {...this.relativeUL}; 
     return clone;
   }
 }

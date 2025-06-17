@@ -414,8 +414,8 @@ const App: React.FC = () => {
         movingDesentsRef.current = familyTree.getAllDescents(movingPerson.current);
       }
       selectedOffset.current = {
-        x: unscaledMousePos.x - movingPerson.current.getX(),
-        y: unscaledMousePos.y - movingPerson.current.getY()
+        x: unscaledMousePos.x - movingPerson.current.getLeftX(),
+        y: unscaledMousePos.y - movingPerson.current.getTopY()
       }
     }
     dragStart.current = { x: pos.x - offset.x, y: pos.y - offset.y };
@@ -434,8 +434,8 @@ const App: React.FC = () => {
     } else {
       const unscaledPos = unscaledPosition(pos, offset, scale);
       const unscaledOffset: Position = {
-        x: unscaledPos.x - movingPerson.current.getX() - selectedOffset.current.x,
-        y: unscaledPos.y - movingPerson.current.getY() - selectedOffset.current.y
+        x: unscaledPos.x - movingPerson.current.getLeftX() - selectedOffset.current.x,
+        y: unscaledPos.y - movingPerson.current.getTopY() - selectedOffset.current.y
       }
       movingPerson.current.addOffset(unscaledOffset, 0, 0, 0);
       if (moveWithDesents) {

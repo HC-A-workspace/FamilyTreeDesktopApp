@@ -10,7 +10,7 @@ app.whenReady().then(() => {
     },
   });
 
-  mainWindow.webContents.openDevTools();
+  // mainWindow.webContents.openDevTools();
 
   const menu = Menu.buildFromTemplate([
     {
@@ -167,7 +167,7 @@ app.whenReady().then(() => {
         preload: path.join(__dirname, "preload.js"),
       }
     });
-    editorWindow.webContents.openDevTools();
+    // editorWindow.webContents.openDevTools();
     editorWindow.loadFile(path.join(__dirname, '../dist/index.html'), { hash: `/editor` });
     editorWindow.webContents.once("did-finish-load", () => {
       editorWindow.webContents.send("load-person-on-editor", personData);

@@ -1,23 +1,5 @@
 import { type Position } from "../model/FundamentalData";
-
-
-interface SingleTextInformation {
-  text: string;
-  width: number;
-  height: number;
-  relativeUL: Position;
-}
-
-function singleTextInformationClone(
-  clone: SingleTextInformation
-): SingleTextInformation {
-  return {
-    text: clone.text,
-    width: clone.width,
-    height: clone.height,
-    relativeUL: {...clone.relativeUL}
-  };
-}
+import { SingleTextInformation } from "./VerticalText";
 
 export interface FontData {
   weight: number;
@@ -141,40 +123,72 @@ export class VerticalTextInformation extends TextInformation{
   protected align(): void {
     const ctx = document.createElement("canvas").getContext("2d")!;
     ctx.font = this.getFont();
-    const spacing = this.font.size / 4;
+    const spacing = this.font.size / 5;
     this.height = 0;
     this.width = 0;
 
     this.singleTextInfos = [];
-    for (const c of this.text) {
-      const metric = ctx.measureText(c);
-      const width = metric.width;
-      const height =
-        metric.actualBoundingBoxAscent - metric.actualBoundingBoxDescent;
-      const char: SingleTextInformation = {
-        text: c,
-        width: width,
-        height: height,
-        relativeUL: { x: 0, y: this.height },
-      };
-      this.singleTextInfos.push(char);
-      this.height += height + spacing;
-      this.width = Math.max(this.width, width);
+    for (const c of this.split()) {
+      const singleInfo = new SingleTextInformation(c, this.getFont(), this.color);
+      singleInfo.translate(0, this.height);
+      this.singleTextInfos.push(singleInfo);
+      this.height += singleInfo.getHeight() + spacing;
+      this.width = Math.max(this.width, singleInfo.getWidth());
+    }
+    for (const singleInfo of this.singleTextInfos) {
+      singleInfo.translate((this.width - singleInfo.getWidth()) / 2, 0)
     }
     this.height -= spacing;
   }
 
   draw(ctx: CanvasRenderingContext2D, position: Position): void {
     ctx.fillStyle = this.color;
-    ctx.font = this.getFont();
-    ctx.textBaseline = "top";
     for (const c of this.singleTextInfos) {
-      ctx.fillText(
-        c.text,
-        this.relativeUL.x + c.relativeUL.x + position.x,
-        this.relativeUL.y + c.relativeUL.y + position.y
-      );
+      c.draw(ctx, this.relativeUL, position)
     }
+  }
+
+  split() {
+    const pattern = /[\x00-\x7F]*[a-z][\x00-\x7F]*[a-z][\x00-\x7F]*/g
+    const numbers = /[0-9]+/g
+    const matched = this.text.match(pattern);
+    let splited: string[] = []
+    if (matched === null) {
+      const numberMatched = this.text.match(numbers);
+      if (numberMatched === null) {
+        splited = this.text.split("")
+      } else {
+        let current = this.text;
+        for (const num of numberMatched) {
+          const end = current.indexOf(num);
+          const substring = current.slice(0, end);
+          splited = splited.concat(substring.split("").concat(num));
+          current = current.slice(substring.length + num.length);
+        }
+        splited = splited.concat(current.split(""));
+      }
+    } else {
+      let current = this.text;
+      for (const text of matched) {
+        const end = current.indexOf(text);
+        const substring = current.slice(0, end);
+        const numberMatched = substring.match(numbers);
+        if (numberMatched === null) {
+          splited = splited.concat(substring.split("")).concat(text);
+          current = current.slice(substring.length + text.length);
+        } else {
+          let subcurrent = substring;
+          for (const num of numberMatched) {
+            const subEnd = subcurrent.indexOf(num);
+            const subsubstring = subcurrent.slice(0, subEnd);
+            splited = splited.concat(subsubstring.split("").concat(num));
+            subcurrent = subcurrent.slice(subsubstring.length + num.length);
+          }
+        }
+      }
+      splited = splited.concat(current.split(""));
+    }
+    return splited;
   }
 
   getSingleTextInfos() {
@@ -189,7 +203,7 @@ export class VerticalTextInformation extends TextInformation{
     clone.font = this.font;
     clone.color = this.color;
     clone.singleTextInfos = [
-      ...this.singleTextInfos.map((info) => singleTextInformationClone(info)),
+      ...this.singleTextInfos.map((info) => info.clone()),
     ];
     clone.relativeUL = {...this.relativeUL}; 
     return clone;
@@ -202,7 +216,7 @@ export class HorizontalTextInformation extends TextInformation{
       ctx.font = this.getFont();
       const metric = ctx.measureText(this.text);
       this.height =
-        metric.actualBoundingBoxAscent - metric.actualBoundingBoxDescent;
+        metric.actualBoundingBoxAscent + metric.actualBoundingBoxDescent;
       this.width = metric.width;
   }
   

@@ -82,6 +82,18 @@ export interface Name {
   title?: string;
 }
 
+export interface FontData {
+  weight: number;
+  size: number;
+  family: string[];
+}
+
+export function getFont(font: FontData) {
+  const weightSize = `${font.weight} ${font.size}pt`
+  const fonts = font.family.map(s => `'${s}'`).join(", ");
+  return `${weightSize} ${fonts}`;
+}
+
 export class Queue<T> {
   private list: T[] = [];
   private length = 0;

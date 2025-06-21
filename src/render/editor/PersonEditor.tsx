@@ -182,7 +182,7 @@ const PersonEditor: React.FC = () => {
               isBC:
                 personData.birthday?.isBC !== undefined
                   ? personData.birthday?.isBC
-                  : true,
+                  : false,
               year:
                 value === "" || Number(value) < 0 ? undefined : Number(value),
             },
@@ -195,7 +195,7 @@ const PersonEditor: React.FC = () => {
               isBC:
                 personData.deathday?.isBC !== undefined
                   ? personData.deathday?.isBC
-                  : true,
+                  : false,
               year:
                 value === "" || Number(value) < 0 ? undefined : Number(value),
             },
@@ -211,7 +211,7 @@ const PersonEditor: React.FC = () => {
               isBC:
                 personData.birthday?.isBC !== undefined
                   ? personData.birthday?.isBC
-                  : true,
+                  : false,
               month:
                 value === "" || Number(value) < 1 || Number(value) > 12
                   ? undefined
@@ -226,7 +226,7 @@ const PersonEditor: React.FC = () => {
               isBC:
                 personData.deathday?.isBC !== undefined
                   ? personData.deathday?.isBC
-                  : true,
+                  : false,
               month:
                 value === "" || Number(value) < 1 || Number(value) > 12
                   ? undefined
@@ -244,7 +244,7 @@ const PersonEditor: React.FC = () => {
               isBC:
                 personData.birthday?.isBC !== undefined
                   ? personData.birthday?.isBC
-                  : true,
+                  : false,
               day:
                 value === "" || Number(value) < 1 || Number(value) > 31
                   ? undefined
@@ -259,7 +259,7 @@ const PersonEditor: React.FC = () => {
               isBC:
                 personData.deathday?.isBC !== undefined
                   ? personData.deathday?.isBC
-                  : true,
+                  : false,
               day:
                 value === "" || Number(value) < 1 || Number(value) > 31
                   ? undefined
@@ -328,7 +328,7 @@ const PersonEditor: React.FC = () => {
                   checked={nameStyle === NameStyle.WithTitle}
                   onChange={() => setNameStyle(NameStyle.WithTitle)}
                 />
-                名前と役職
+                名前と立場
               </label>
               <label style={{ marginRight: 5 }}>
                 <input
@@ -700,12 +700,12 @@ const PersonEditor: React.FC = () => {
           </div>
         </div>
         <div style={{ display: "flex" }}>
-          <ItemTitle title="著作" titleWidth={titleWidth} top={2} />
+          <ItemTitle title="言葉・句" titleWidth={titleWidth} top={2} />
           <div style={{ display: "flex", width: width - titleWidth }}>
             <ListEditor
               list={personData.words}
               width={width - titleWidth}
-              placeholder="著作"
+              placeholder="言葉・句"
               onAdd={() =>
                 setPersonData({
                   ...personData,

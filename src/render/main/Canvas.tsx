@@ -5,16 +5,17 @@ import { nullPosition, type Position } from "../../model/FundamentalData";
 import {
   getEmptyPersonData,
   Person,
-  personDataClone,
   type PersonData,
 } from "../../model/Person";
-import ContextMenu from "../../components/ContextMenu";
+import ContextMenu from "../menu/ContextMenu";
 import type { MarriageData } from "../../model/Marriage";
-import PersonMenu from "../../components/PersonMenu";
+import PersonMenu from "../menu/PersonMenu";
 import { BackForwordList } from "../../model/BackForwordList";
-import { off } from "process";
 import Ticks from "./Ticks";
 import { saveFamilyTree } from "../../components/saveData";
+import { Spot, SpotData } from "../../model/Spot";
+import SpotEditor from "../editor/SpotEditor";
+import SpotMenu from "../menu/SpotMenu";
 
 export const State = {
   Usual: 0,
@@ -95,14 +96,14 @@ const Title: React.FC<TitleProps> = ({ margin, title, setTitle }) => {
 
 const App: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [familyTree] = useState<FamilyTree>(new FamilyTree([], []));
+  const [familyTree] = useState<FamilyTree>(new FamilyTree([], [], []));
   const [title, setTitle] = useState<string>("家系図");
 
   const backforwordListRef = useRef<BackForwordList<FamilyTree>>(
     new BackForwordList<FamilyTree>(
       100,
       () => {
-        return new FamilyTree([], []);
+        return new FamilyTree([], [], []);
       },
       (oldState: FamilyTree, newState: FamilyTree) => {
         oldState.load(newState);
@@ -147,6 +148,11 @@ const App: React.FC = () => {
 
   const selectedPerson = useRef<Person | undefined>(undefined);
   const selectedOffset = useRef<Position>({x: 0, y: 0})
+
+  const movingSpot = useRef<Spot | undefined>(undefined);
+  const [displaySpotEditor, setDisplaySpotEditor] = useState(false);
+
+  const [displaySpotMenu, setDisplaySpotMenu] = useState(false);
 
 
   useEffect(() => {
@@ -193,6 +199,9 @@ const App: React.FC = () => {
         forceUpdate();
       }
     });
+    window.electronAPI?.onCreateNewPerson(() => {
+      handleAddPerson(true);
+    });
     window.electronAPI?.onMoveWithDescents(setMoveWithDescents);
     window.electronAPI?.onShowGrid((flag) => {
       setDisplayTicks(flag);
@@ -201,6 +210,7 @@ const App: React.FC = () => {
     window.electronAPI?.onAllClear(() => {
       familyTree.getMarriageMap().clear();
       familyTree.getPersonMap().clear();
+      familyTree.getSpots().clear();
       familyTree.setTitle("家系図")
       setTitle(familyTree.getTitle());
       save();
@@ -268,8 +278,9 @@ const App: React.FC = () => {
     const data = JSON.parse(content);
     const personData: PersonData[] = data.personData;
     const marriageData: MarriageData[] = data.marriageData;
+    const spotData: SpotData[] = data.spotData
 
-    const newFamilyTree = new FamilyTree(personData, marriageData);
+    const newFamilyTree = new FamilyTree(personData, marriageData, spotData);
 
     const canvasCenter: Position = {
       x: (canvasRef.current?.width ?? 0) / 2,
@@ -296,21 +307,27 @@ const App: React.FC = () => {
         scaleRef.current
       );
       const offsetPersonId = familyTree.getNextPersonId();
-      const offseMarriageId = familyTree.getNextMarriageId();
+      const offsetMarriageId = familyTree.getNextMarriageId();
+      const offsetSpotId = familyTree.getNextSpotId();
       const offsetPosition: Position = {
         x: unscaledCanvasCenter.x - center.x,
         y: unscaledCanvasCenter.y - center.y,
       };
 
       for (const [, person] of newFamilyTree.getPersonMap()) {
-        person.addOffset(offsetPosition, offsetPersonId, offseMarriageId, 0);
+        person.addOffset(offsetPosition, offsetPersonId, offsetMarriageId, 0);
         familyTree.getPersonMap().set(person.getId(), person);
         familyTree.nextPersonIdCountUp();
       }
       for (const [, marriage] of newFamilyTree.getMarriageMap()) {
-        marriage.addOffset(offsetPersonId, offseMarriageId);
+        marriage.addOffset(offsetPersonId, offsetMarriageId);
         familyTree.getMarriageMap().set(marriage.getId(), marriage);
         familyTree.nextMarriageIdCountUp();
+      }
+      for (const [, spot] of newFamilyTree.getSpots()) {
+        spot.addOffSet(offsetSpotId, offsetPosition);
+        familyTree.getSpots().set(spot.getId(), spot);
+        familyTree.nextSpotIdCountUp();
       }
 
       forceUpdate();
@@ -403,19 +420,29 @@ const App: React.FC = () => {
     }
     setContextMenuVisible(false);
     setPersonMenuVisible(false);
+    setDisplaySpotEditor(false);
+    setDisplaySpotMenu(false);
     setIsDragging(true);
     const unscaledMousePos = unscaledPosition(pos, offset, scale)
-    movingPerson.current = familyTree.getSelectedPerson(
-      unscaledMousePos
-    );
-    if (movingPerson.current !== undefined) {
-      movingPerson.current.changeFont(FamilyTree.BOLD_FONT);
-      if (moveWithDesents) {
-        movingDesentsRef.current = familyTree.getAllDescents(movingPerson.current);
-      }
+    movingSpot.current = familyTree.getSpotAt(unscaledMousePos, scale);
+    if (movingSpot.current !== undefined) {
       selectedOffset.current = {
-        x: unscaledMousePos.x - movingPerson.current.getLeftX(),
-        y: unscaledMousePos.y - movingPerson.current.getTopY()
+        x: unscaledMousePos.x - movingSpot.current.getLeftX(),
+        y: unscaledMousePos.y - movingSpot.current.getTopY()
+      }
+    } else {
+      movingPerson.current = familyTree.getSelectedPerson(
+        unscaledMousePos
+      );
+      if (movingPerson.current !== undefined) {
+        movingPerson.current.changeFont(FamilyTree.BOLD_FONT);
+        if (moveWithDesents) {
+          movingDesentsRef.current = familyTree.getAllDescents(movingPerson.current);
+        }
+        selectedOffset.current = {
+          x: unscaledMousePos.x - movingPerson.current.getLeftX(),
+          y: unscaledMousePos.y - movingPerson.current.getTopY()
+        }
       }
     }
     dragStart.current = { x: pos.x - offset.x, y: pos.y - offset.y };
@@ -426,7 +453,15 @@ const App: React.FC = () => {
     if (!isDragging) return;
     const pos = getMousePos(e);
 
-    if (movingPerson.current === undefined) {
+    if (movingSpot.current !== undefined) {
+      const unscaledPos = unscaledPosition(pos, offset, scale);
+      const moveto: Position = {
+        x: unscaledPos.x - selectedOffset.current.x,
+        y: unscaledPos.y - selectedOffset.current.y
+      }
+      movingSpot.current.moveTo(moveto);
+      forceUpdate();
+    } else if (movingPerson.current === undefined) {
       setOffset({
         x: pos.x - dragStart.current.x,
         y: pos.y - dragStart.current.y,
@@ -443,7 +478,7 @@ const App: React.FC = () => {
           descent.addOffset(unscaledOffset, 0, 0, 0);
         }
       }
-      setUpdateTrigger((prev) => prev + 1);
+      forceUpdate();
     }
   };
 
@@ -455,6 +490,7 @@ const App: React.FC = () => {
       save();
     }
     setIsDragging(false);
+    movingSpot.current = undefined
     movingPerson.current = undefined;
   };
 
@@ -484,18 +520,31 @@ const App: React.FC = () => {
       selectedPerson.current = undefined;
       forceUpdate();
     }
-    const person = familyTree.getSelectedPerson(
-      unscaledPosition(mousePos, offset, scale)
-    );
-    if (person === undefined) {
-      setContextMenuVisible(true);
-      setPersonMenuVisible(false);
-    } else {
-      setPersonMenuVisible(true);
+    const spot = familyTree.getSpotAt(unscaledPosition(mousePos, offset, scale), scale);
+    if (spot !== undefined) {
+      editiongSpotData.current = {
+        id: spot.getData().id,
+        text: spot.getData().text,
+        position: {...spot.getData().position}
+      }
       setContextMenuVisible(false);
-      selectedPerson.current = person;
-      selectedPerson.current.changeColor("green");
-      forceUpdate();
+      setPersonMenuVisible(false);
+      setDisplaySpotMenu(true);
+    } else {
+      const person = familyTree.getSelectedPerson(
+        unscaledPosition(mousePos, offset, scale)
+      );
+      if (person === undefined) {
+        setContextMenuVisible(true);
+        setPersonMenuVisible(false);
+      } else {
+        setPersonMenuVisible(true);
+        setContextMenuVisible(false);
+        selectedPerson.current = person;
+        selectedPerson.current.changeColor("green");
+        forceUpdate();
+      }
+      setDisplaySpotMenu(false);
     }
     setMenuPosition({ x: e.clientX, y: e.clientY });
   };
@@ -509,14 +558,22 @@ const App: React.FC = () => {
     }
   };
 
-  const handleAddPerson = () => {
-    const rescaledPos = unscaledPosition(
-      { x: canvasWidth() / 2, y: canvasHeight() / 2 },
-      offset,
-      scale
-    );
-    window.electronAPI?.onOpenEditor(getEmptyPersonData(-1, rescaledPos));
+  const handleAddPerson = (isCenter: boolean) => {
+    const pos: Position = (isCenter) ? { x: canvasWidth() / 2, y: canvasHeight() / 2 } : menuPosition;
+    const unscaledPos = unscaledPosition(pos, offset, scale);
+    window.electronAPI?.onOpenEditor(getEmptyPersonData(-1, unscaledPos));
   };
+
+  const editiongSpotData = useRef<SpotData | undefined>(undefined)
+
+  const handleAddSpot = () => {
+    editiongSpotData.current = {
+      id: -1,
+      text: "",
+      position: unscaledPosition(menuPosition, offset, scale)
+    }
+    setDisplaySpotEditor(true);
+  }
 
   return (
     <div
@@ -563,31 +620,11 @@ const App: React.FC = () => {
       {contextMenuVisible && (
         <ContextMenu
           position={menuPosition}
-          familyTree={familyTree}
           canvasWidth={canvasWidth()}
           canvasHeight={canvasHeight()}
           onClose={() => setContextMenuVisible(false)}
-          onAddPerson={handleAddPerson}
-          onLoadData={() => {}}
-          onBack={() => {
-            if (backforwordListRef.current.canBack()) {
-              const backData = backforwordListRef.current.getBackState();
-              familyTree.load(backData);
-              setTitle(familyTree.getTitle());
-              forceUpdate();
-            }
-          }}
-          canBack={backforwordListRef.current.canBack()}
-          onForword={() => {
-            if (backforwordListRef.current.canForword()) {
-              const forwordData =
-                backforwordListRef.current.getForwordState();
-              familyTree.load(forwordData);
-              setTitle(familyTree.getTitle());
-              forceUpdate();
-            }
-          }}
-          canForword={backforwordListRef.current.canForword()}
+          onAddPerson={() => handleAddPerson(false)}
+          onAddSpot={handleAddSpot}
         />
       )}
       {personMenuVisible && selectedPerson.current !== undefined && (
@@ -612,6 +649,47 @@ const App: React.FC = () => {
           }}
         />
       )}
+      {displaySpotEditor && editiongSpotData.current !== undefined && (
+        <SpotEditor
+          spot={editiongSpotData.current}
+          position={menuPosition}
+          onClose={() => setDisplaySpotEditor(false)}
+          onSave={(text) => {
+            if (editiongSpotData.current !== undefined) {
+              editiongSpotData.current.text = text;
+              if (editiongSpotData.current.id === -1) {
+                editiongSpotData.current.id = familyTree.getNextSpotId();
+                familyTree.addSpot(new Spot(editiongSpotData.current));
+                familyTree.nextSpotIdCountUp();
+              } else {
+                familyTree.getSpots().get(editiongSpotData.current.id)?.setText(text);
+              }
+              forceUpdate()
+              save();
+              editiongSpotData.current = undefined;
+            }
+          }}
+        />
+      )}
+      {displaySpotMenu && editiongSpotData.current !== undefined && (
+        <SpotMenu
+          position={menuPosition}
+          canvasWidth={canvasWidth()}
+          canvasHeight={canvasHeight()}
+          onClose={() => setDisplaySpotMenu(false)}
+          onDeleteSpot={() => {
+            if (editiongSpotData.current !== undefined) {
+              familyTree.deleteSpot(editiongSpotData.current.id);
+              forceUpdate()
+              save();
+              editiongSpotData.current = undefined;
+            }
+          }}
+          onEditSpot={() => {
+            setDisplaySpotEditor(true);
+          }}
+        />
+      )}   
     </div>    
   );
 };

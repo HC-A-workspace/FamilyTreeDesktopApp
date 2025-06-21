@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { State } from "../render/main/Canvas";
-import { FamilyTree } from "../model/FamilyTree";
-import type { Position } from "../model/FundamentalData";
-import type { Person } from "../model/Person";
+import { State } from "../main/Canvas";
+import { FamilyTree } from "../../model/FamilyTree";
+import type { Position } from "../../model/FundamentalData";
+import type { Person } from "../../model/Person";
 import SingleMenu from "./SingleMenu";
 
 interface SelectRelationProps {
@@ -169,10 +169,10 @@ const PersonMenu: React.FC<PersonMenuProps> = ({
 }) => {
   const [hoveredOn, setHoveredOn] = useState<number | undefined>(undefined);
   const [selectRelationVisible, setSelectRelationVisible] = useState(false);
-  const panelHeightWithOffset = 250;
-  const panelWidthWithOffset = 160;
-  const panelHeight = 238;
-  const panelWidth = 155;
+  const panelHeightWithOffset = 240;
+  const panelWidthWithOffset = 165;
+  const panelHeight = 236;
+  const panelWidth = 159;
 
   const hasRelation = () => {
     const data = selectedPerson.raw();

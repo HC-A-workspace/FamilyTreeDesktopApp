@@ -1,5 +1,4 @@
 import {
-  FontData,
   HorizontalTextInformation,
   TextInformation,
   VerticalTextInformation,
@@ -7,6 +6,7 @@ import {
 import { FamilyTree } from "./FamilyTree";
 import {
   emptyStringToUndefined,
+  FontData,
   Sex,
   type Date,
   type Name,

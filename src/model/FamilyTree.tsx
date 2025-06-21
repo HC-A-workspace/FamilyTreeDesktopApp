@@ -1,7 +1,7 @@
-import { FontData } from "../components/TextInformation";
-import { Queue, sameElementList, type Position } from "./FundamentalData";
+import { FontData, Queue, sameElementList, type Position } from "./FundamentalData";
 import { Marriage, type MarriageData } from "./Marriage";
 import { Person, type PersonData } from "./Person";
+import { Spot, SpotData } from "./Spot";
 
 export type PersonId = number | undefined;
 export type MarriageId = number | undefined;
@@ -9,9 +9,11 @@ export type MarriageId = number | undefined;
 export class FamilyTree {
   private personMap: Map<number, Person>;
   private marriageMap: Map<number, Marriage>;
+  private spotList: Map<number, Spot>;
   private title: string = "家系図";
   private nextPersonId: number = 0;
   private nextMarriageId: number = 0;
+  private nextSpotId: number = 0;
   public static NORMAL_FONT: FontData = {
     weight: 400,
     size: 20,
@@ -41,11 +43,12 @@ export class FamilyTree {
   private leftX: number = 0;
   private rightX: number = 0;
 
-  constructor(people: Person[], marriage: Marriage[]);
-  constructor(peopleData: PersonData[], marriagesData: MarriageData[]);
+  constructor(people: Person[], marriage: Marriage[], spots: Spot[]);
+  constructor(peopleData: PersonData[], marriagesData: MarriageData[], spotData: SpotData[]);
   constructor(
     people: Person[] | PersonData[],
-    marriages: Marriage[] | MarriageData[]
+    marriages: Marriage[] | MarriageData[],
+    spots: Spot[] | SpotData[]
   ) {
     this.personMap = new Map(
       people.length === 0
@@ -62,6 +65,13 @@ export class FamilyTree {
           ? (marriages as Marriage[]).map((m) => [m.getId(), m])
           : (marriages as MarriageData[]).map((m) => [m.id, new Marriage(m)])
     );
+
+    this.spotList = new Map(
+      (spots.length === 0)
+        ? [] 
+        : (spots[0] instanceof Spot)
+          ? (spots as Spot[]).map((spot) => [spot.getId(), spot.clone()])
+          : (spots as SpotData[]).map((spot) => [spot.id, new Spot(spot)]));
 
     if (people.length > 0) {
       this.personMap = new Map();
@@ -95,20 +105,26 @@ export class FamilyTree {
 
     this.nextPersonId = people.length;
     this.nextMarriageId = marriages.length;
+    this.nextSpotId = spots.length;
 
     this.normalizeId();
   }
 
   clone(): FamilyTree {
-    const clone = new FamilyTree([], []);
+    const clone = new FamilyTree([], [], []);
     clone.personMap = new Map(
-      Array.from(clone.personMap).map(
+      Array.from(this.personMap).map(
         (p) => [p[0], p[1].clone()] as [number, Person]
       )
     );
     clone.marriageMap = new Map(
-      Array.from(clone.marriageMap).map(
+      Array.from(this.marriageMap).map(
         (m) => [m[0], m[1].clone()] as [number, Marriage]
+      )
+    );
+    clone.spotList = new Map(
+      Array.from(this.spotList).map(
+        (m) => [m[0], m[1].clone()] as [number, Spot]
       )
     );
     clone.title = this.title;
@@ -361,6 +377,12 @@ export class FamilyTree {
         newIdx,
       ])
     );
+    const spotRules = new Map<number, number>(
+      Array.from(this.spotList.keys()).map((oldIdx, newIdx) => [
+        oldIdx,
+        newIdx,
+      ])
+    );
 
     this.personMap = new Map<number, Person>(
       Array.from(this.personMap.values()).map((p) => {
@@ -374,6 +396,13 @@ export class FamilyTree {
         return [m.getId(), m];
       })
     );
+    this.spotList = new Map<number, Spot>(
+        Array.from(this.spotList.values()).map((s) => {
+        s.normaliseId(spotRules);
+        return [s.getId(), s];
+      })
+
+    )
     this.nextPersonId = this.personMap.size;
     this.nextMarriageId = this.marriageMap.size;
   }
@@ -384,6 +413,10 @@ export class FamilyTree {
 
   getMarriageData(): MarriageData[] {
     return Array.from(this.marriageMap.values()).map((m) => m.raw());
+  }
+
+  getSpotData(): SpotData[] {
+    return Array.from(this.spotList.values()).map((s) => s.getData());
   }
 
   getTitle(): string {
@@ -402,6 +435,10 @@ export class FamilyTree {
     this.nextMarriageId++;
   }
 
+  nextSpotIdCountUp() {
+    this.nextSpotId++;
+  }
+  
   deletePersonOfMarriage(mId: number, pId: number) {
     const marriage = this.findMarriageById(mId);
     marriage?.deleteSprouse(pId);
@@ -462,6 +499,11 @@ export class FamilyTree {
     this.marriageMap = new Map(
       Array.from(familyTree.marriageMap).map(
         (m) => [m[0], m[1].clone()] as [number, Marriage]
+      )
+    );
+    this.spotList = new Map(
+      Array.from(familyTree.spotList).map(
+        (m) => [m[0], m[1].clone()] as [number, Spot]
       )
     );
     this.title = familyTree.title;
@@ -861,5 +903,34 @@ export class FamilyTree {
       child.setAdoptedParentMarriageId(undefined);
       this.marriageMap.delete(marriage.getId());
     }
+  }
+
+  getSpots() {
+    return this.spotList;
+  }
+
+  addSpot(spot: Spot) {
+    this.spotList.set(spot.getId(), spot);
+  }
+
+  deleteSpot(spot: Spot | number) {
+    if (spot instanceof Spot) {
+      this.spotList.delete(spot.getId());
+    } else {
+      this.spotList.delete(spot);
+    }
+  }
+
+  getSpotAt(unscaledPosition: Position, scale: number): Spot | undefined {
+    for (const [, spot] of this.spotList) {
+      if (spot.isContained(unscaledPosition, scale)) {
+        return spot
+      }
+    }
+    return undefined;
+  }
+
+  getNextSpotId() {
+    return this.nextSpotId;
   }
 }

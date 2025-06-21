@@ -5,6 +5,7 @@ import type {
   HorizontalTextInformation,
   VerticalTextInformation,
 } from "../../components/TextInformation";
+import { Spot } from "../../model/Spot";
 
 
 interface RectPosition {
@@ -132,7 +133,7 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
 
   const marriages = familyTree.getMarriageMap();
 
-  for (const [id] of marriages) {
+  for (const [id, marriage] of marriages) {
     const parents = familyTree.findSpousesOfMarriage(id);
     const children = familyTree.findChildrenOfMarriage(id);
     const adoptedChildren = familyTree.findAdoptedChildrenOfMarriage(id);
@@ -299,8 +300,9 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
 
     const leftChildrenX = Math.min(...childrenX);
     const rightChildrenX = Math.max(...childrenX);
+    const allChildrenNum = children.length + adoptedChildren.length
 
-    if (parents.length > 0 && children.length + adoptedChildren.length > 0) {
+    if (parents.length > 0 && allChildrenNum > 0) {
       const isDouble = children.length === 0 && adoptedChildren.length === 1;
       if (parents.length === 1) {
         const parentX = parents[0].getCenterX();
@@ -365,7 +367,7 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
         const rightUpperX = Math.max(upper.x1, upper.x2);
         const maxLeftX = Math.max(leftUpperX, leftChildrenX);
         const minRightX = Math.min(rightUpperX, rightChildrenX);
-        if (minRightX - maxLeftX > 5) {
+        if (minRightX - maxLeftX > 5 || (allChildrenNum === 1 && (maxLeftX - leftUpperX > 5) && (rightUpperX - minRightX > 5))) {
           const midX = (minRightX + maxLeftX) / 2;
           const v: Vertical = {
             x: midX,
@@ -480,7 +482,7 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
       }
     }
 
-    if (children.length + adoptedChildren.length > 1) {
+    if (children.length + adoptedChildren.length > 0) {
       const longh: Horizontal = {
         y: lower.y,
         x1: leftChildrenX,
@@ -568,6 +570,12 @@ function drawRuler(ctx: CanvasRenderingContext2D, rect: RectPosition, ticks: {he
   ctx.setLineDash([]);
 }
 
+function drawSpots(ctx: CanvasRenderingContext2D, spots: Map<number, Spot>, scale: number) {
+  for (const [, spot] of spots) {
+    spot.draw(ctx, scale);
+  }
+}
+
 export function drawFamilyTree(
   ctx: CanvasRenderingContext2D,
   familyTree: FamilyTree,
@@ -581,5 +589,7 @@ export function drawFamilyTree(
   }
   drawLines(ctx, familyTree);
   drawNames(ctx, familyTree.getPersonMap(), rectPosition);
+  drawSpots(ctx, familyTree.getSpots(), scale);
   return ticks
 }
+

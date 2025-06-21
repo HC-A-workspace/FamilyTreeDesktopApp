@@ -1,11 +1,5 @@
-import { type Position } from "../model/FundamentalData";
+import { FontData, getFont, type Position } from "../model/FundamentalData";
 import { SingleTextInformation } from "./VerticalText";
-
-export interface FontData {
-  weight: number;
-  size: number;
-  family: string[];
-}
 
 export abstract class TextInformation {
   protected width = 0;
@@ -50,9 +44,7 @@ export abstract class TextInformation {
   }
 
   getFont() {
-    const weightSize = `${this.font.weight} ${this.font.size}pt`
-    const fonts = this.font.family.map(s => `'${s}'`).join(", ");
-    return `${weightSize} ${fonts}`;
+    return getFont(this.font)
   }
 
   getColor() {

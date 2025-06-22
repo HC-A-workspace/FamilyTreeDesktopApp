@@ -113,6 +113,7 @@ export class Person {
   private isVertical = true;
   private showBywords = true;
   private showYears = true
+  private isFixedHorizontally = false;
 
   constructor(data: PersonData, showBywords: boolean, showYears: boolean, nameText: TextInformation, bywordsText?: TextInformation
     , birthText?: HorizontalTextInformation, deathText?: HorizontalTextInformation, height?: number, width?: number);
@@ -567,10 +568,10 @@ export class Person {
     offsetMarriageId: number,
     offsetTagId: number
   ) {
-    this.data.position = {
-      x: this.data.position.x + offsetPosition.x,
-      y: this.data.position.y + offsetPosition.y,
-    };
+    this.data.position.x += offsetPosition.x;
+    if (this.isFixedHorizontally === false) {
+      this.data.position.y += offsetPosition.y
+    }
     this.data.id += offsetPersonId;
     if (this.data.parentMarriageId !== undefined) {
       this.data.parentMarriageId += offsetMarriageId;
@@ -630,5 +631,13 @@ export class Person {
     if (this.deathText !== undefined && this.showYears) {
       this.deathText.draw(ctx, this.data.position);
     }
+  }
+
+  setIsFixedHolizontally(isFixed: boolean) {
+    this.isFixedHorizontally = isFixed
+  }
+
+  getIsFixedHolizontally() {
+    return this.isFixedHorizontally;
   }
 }

@@ -359,7 +359,6 @@ const App: React.FC = () => {
         secondSelectedPerson !== undefined &&
         secondSelectedPerson.getId() !== selectedPerson.current.getId()
       ) {
-        selectedPerson.current?.changeColor();
         let isSuccessed = false;
         switch (state) {
           case State.SelectingSpouse:
@@ -412,7 +411,6 @@ const App: React.FC = () => {
         forceUpdate();
         setState(State.Usual);
       } else if (state === State.Usual) {
-        selectedPerson.current?.changeColor();
         selectedPerson.current = undefined;
         forceUpdate();
         setState(State.Usual);
@@ -472,10 +470,16 @@ const App: React.FC = () => {
         x: unscaledPos.x - movingPerson.current.getLeftX() - selectedOffset.current.x,
         y: unscaledPos.y - movingPerson.current.getTopY() - selectedOffset.current.y
       }
+      if (movingPerson.current.getIsFixedHolizontally()) {
+        unscaledOffset.y = 0;
+      }
       movingPerson.current.addOffset(unscaledOffset, 0, 0, 0);
       if (moveWithDesents) {
         for (const descent of movingDesentsRef.current) {
+          const isFixed = descent.getIsFixedHolizontally();
+          descent.setIsFixedHolizontally(false);
           descent.addOffset(unscaledOffset, 0, 0, 0);
+          descent.setIsFixedHolizontally(isFixed);
         }
       }
       forceUpdate();
@@ -495,7 +499,7 @@ const App: React.FC = () => {
   };
 
   const handleWheel = (e: React.WheelEvent) => {
-    const zoomFactor = e.deltaY > 0 ? 1.1 : 1.0 / 1.1;
+    const zoomFactor = e.deltaY < 0 ? 1.1 : 1.0 / 1.1;
     const mouse = getMousePos(e);
 
     setScale((prev) => prev * zoomFactor);
@@ -516,7 +520,6 @@ const App: React.FC = () => {
     e.preventDefault();
     const mousePos = getMousePos(e);
     if (selectedPerson.current !== undefined) {
-      selectedPerson.current?.changeColor();
       selectedPerson.current = undefined;
       forceUpdate();
     }
@@ -541,7 +544,6 @@ const App: React.FC = () => {
         setPersonMenuVisible(true);
         setContextMenuVisible(false);
         selectedPerson.current = person;
-        selectedPerson.current.changeColor("green");
         forceUpdate();
       }
       setDisplaySpotMenu(false);
@@ -645,6 +647,11 @@ const App: React.FC = () => {
           onShowPerson={() => {
             if (selectedPerson.current !== undefined) {
               window.electronAPI?.onOpenEditor(selectedPerson.current.raw());
+            }
+          }}
+          onFixHorizontally={() => {
+            if (selectedPerson.current !== undefined) {
+              selectedPerson.current.setIsFixedHolizontally(!selectedPerson.current.getIsFixedHolizontally());
             }
           }}
         />

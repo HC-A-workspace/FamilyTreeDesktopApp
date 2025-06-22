@@ -153,6 +153,7 @@ interface PersonMenuProps {
   onSetState: (state: State) => void;
   onEditPerson: () => void;
   onShowPerson: () => void;
+  onFixHorizontally: () => void;
 }
 
 const PersonMenu: React.FC<PersonMenuProps> = ({
@@ -166,6 +167,7 @@ const PersonMenu: React.FC<PersonMenuProps> = ({
   onSetState,
   onEditPerson,
   onShowPerson,
+  onFixHorizontally,
 }) => {
   const [hoveredOn, setHoveredOn] = useState<number | undefined>(undefined);
   const [selectRelationVisible, setSelectRelationVisible] = useState(false);
@@ -238,8 +240,21 @@ const PersonMenu: React.FC<PersonMenuProps> = ({
         />
         <hr />
         <SingleMenu
-          text="人物を削除"
+          text={selectedPerson.getIsFixedHolizontally() ? "水平方向を固定    ✓" : "水平方向を固定     "}
           id={2}
+          onClick={() => {
+            onFixHorizontally();
+            onClose();
+          }}
+          available={true}
+          hoveredOn={hoveredOn}
+          setHoveredOn={setHoveredOn}
+          onMouseEnter={() => setSelectRelationVisible(false)}
+        />
+        <hr />
+        <SingleMenu
+          text="人物を削除"
+          id={3}
           onClick={() => {
             onDeletePerson();
             setSelectRelationVisible(false);
@@ -253,7 +268,7 @@ const PersonMenu: React.FC<PersonMenuProps> = ({
         <hr />
         <SingleMenu
           text="関係を追加..."
-          id={3}
+          id={4}
           onClick={() => setSelectRelationVisible(true)}
           available={true}
           hoveredOn={hoveredOn}
@@ -262,7 +277,7 @@ const PersonMenu: React.FC<PersonMenuProps> = ({
         />
         <SingleMenu
           text="関係を削除"
-          id={9}
+          id={5}
           onClick={() => {
             if (hasRelation()) {
               onSetState(State.CancellingRelation);
@@ -277,7 +292,7 @@ const PersonMenu: React.FC<PersonMenuProps> = ({
         />
         <SingleMenu
           text="Show PersonMap"
-          id={10}
+          id={6}
           onClick={() => {
             console.log(familyTree.getPersonMap());
             setSelectRelationVisible(false);
@@ -290,7 +305,7 @@ const PersonMenu: React.FC<PersonMenuProps> = ({
         />
         <SingleMenu
           text="Show MarriageMap"
-          id={11}
+          id={7}
           onClick={() => {
             console.log(familyTree.getMarriageMap());
             setSelectRelationVisible(false);
@@ -307,7 +322,7 @@ const PersonMenu: React.FC<PersonMenuProps> = ({
           canvasHeight={canvasHeight}
           canvasWidth={canvasWidth}
           menuWidth={panelWidth}
-          menuId={3}
+          menuId={4}
           onClose={() => {
             setSelectRelationVisible(false);
             onClose();

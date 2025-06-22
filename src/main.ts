@@ -10,7 +10,7 @@ app.whenReady().then(() => {
     },
   });
 
-  // mainWindow.webContents.openDevTools();
+  mainWindow.webContents.openDevTools();
 
   const menu = Menu.buildFromTemplate([
     {

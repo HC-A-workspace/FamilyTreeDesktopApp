@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useState } from "react";
 import { FamilyTree } from "../../model/FamilyTree";
 import { drawFamilyTree } from "./DrawFamilyTree";
-import { nullPosition, type Position } from "../../model/FundamentalData";
+import { type Position } from "../../model/FundamentalData";
 import {
   getEmptyPersonData,
   Person,
@@ -10,7 +10,7 @@ import {
 import ContextMenu from "../menu/ContextMenu";
 import type { MarriageData } from "../../model/Marriage";
 import PersonMenu from "../menu/PersonMenu";
-import { BackForwordList } from "../../model/BackForwordList";
+import { UndoRedoList } from "../../model/UndoRedoList";
 import Ticks from "./Ticks";
 import { saveFamilyTree } from "../../components/saveData";
 import { Spot, SpotData } from "../../model/Spot";
@@ -99,8 +99,8 @@ const App: React.FC = () => {
   const [familyTree] = useState<FamilyTree>(new FamilyTree([], [], []));
   const [title, setTitle] = useState<string>("家系図");
 
-  const backforwordListRef = useRef<BackForwordList<FamilyTree>>(
-    new BackForwordList<FamilyTree>(
+  const undoRedoListRef = useRef<UndoRedoList<FamilyTree>>(
+    new UndoRedoList<FamilyTree>(
       100,
       () => {
         return new FamilyTree([], [], []);
@@ -113,7 +113,7 @@ const App: React.FC = () => {
 
   const [updateTrigger, setUpdateTrigger] = useState(0);
 
-  const offsetRef = useRef<Position>({x: 0, y:0})
+  const offsetRef = useRef<Position>({ x: 0, y: 0 });
   const scaleRef = useRef(1);
 
   const [offset, setOffset] = useState<Position>({ x: 0, y: 0 });
@@ -128,18 +128,20 @@ const App: React.FC = () => {
 
   const [contextMenuVisible, setContextMenuVisible] = useState(false);
   const [personMenuVisible, setPersonMenuVisible] = useState(false);
-  const [menuPosition, setMenuPosition] = useState<Position>(nullPosition());
+  const [menuPosition, setMenuPosition] = useState<Position>({ x: 0, y: 0 });
 
   const [displayTicks, setDisplayTicks] = useState(true);
   const [moveWithDesents, setMoveWithDescents] = useState(false);
-  const movingDesentsRef = useRef<Person[]>([])
+  const movingDesentsRef = useRef<Person[]>([]);
 
   const margin = 50;
   const tickWidth = 100;
-  const [ticks, setTicks] = useState<{height: number, text: string}[]>([])
+  const [ticks, setTicks] = useState<{ height: number; text: string }[]>([]);
 
   const canvasWidth = () => {
-    return displayTicks ? windowWidth - 2 * margin - tickWidth : windowWidth - 2 * margin;
+    return displayTicks
+      ? windowWidth - 2 * margin - tickWidth
+      : windowWidth - 2 * margin;
   };
 
   const canvasHeight = () => {
@@ -147,17 +149,20 @@ const App: React.FC = () => {
   };
 
   const selectedPerson = useRef<Person | undefined>(undefined);
-  const selectedOffset = useRef<Position>({x: 0, y: 0})
+  const selectedOffset = useRef<Position>({ x: 0, y: 0 });
 
   const movingSpot = useRef<Spot | undefined>(undefined);
   const [displaySpotEditor, setDisplaySpotEditor] = useState(false);
 
   const [displaySpotMenu, setDisplaySpotMenu] = useState(false);
 
-
   useEffect(() => {
-    window.electronAPI?.onLoadData((path, content) => {loadFile(path, content, true)});
-    window.electronAPI?.onLoadAndAddData((path, content) => {loadFile(path, content, false)});
+    window.electronAPI?.onLoadData((path, content) => {
+      loadFile(path, content, true);
+    });
+    window.electronAPI?.onLoadAndAddData((path, content) => {
+      loadFile(path, content, false);
+    });
     window.electronAPI?.onSendDataToMain((personData: PersonData) => {
       Person.formatData(personData);
       if (
@@ -167,34 +172,40 @@ const App: React.FC = () => {
         personData.id = familyTree.getNextPersonId();
         familyTree
           .getPersonMap()
-          .set(personData.id, new Person(personData, familyTree.getShowBywords(), familyTree.getShowYears(), familyTree.getIsVertical()));
+          .set(
+            personData.id,
+            new Person(
+              personData,
+              familyTree.getShowBywords(),
+              familyTree.getShowYears(),
+              familyTree.getIsVertical()
+            )
+          );
         familyTree.nextPersonIdCountUp();
       } else {
-        const targetPerson = familyTree.findPersonById(
-          personData.id
-        );
+        const targetPerson = familyTree.findPersonById(personData.id);
         if (targetPerson !== undefined) {
           targetPerson.update(personData);
         }
       }
       save();
       forceUpdate();
-    })
+    });
     window.electronAPI?.onSaveFamilyTree(() => {
       saveFamilyTree(familyTree);
     });
     window.electronAPI?.onUndo(() => {
-      if (backforwordListRef.current.canBack()) {
-        const backData = backforwordListRef.current.getBackState();
-        familyTree.load(backData);
+      if (undoRedoListRef.current.canUndo()) {
+        const undoData = undoRedoListRef.current.getUndoState();
+        familyTree.load(undoData);
         setTitle(familyTree.getTitle());
         forceUpdate();
       }
     });
     window.electronAPI?.onRedo(() => {
-      if (backforwordListRef.current.canForword()) {
-        const backData = backforwordListRef.current.getForwordState();
-        familyTree.load(backData);
+      if (undoRedoListRef.current.canRedo()) {
+        const redoData = undoRedoListRef.current.getRedoState();
+        familyTree.load(redoData);
         setTitle(familyTree.getTitle());
         forceUpdate();
       }
@@ -211,7 +222,7 @@ const App: React.FC = () => {
       familyTree.getMarriageMap().clear();
       familyTree.getPersonMap().clear();
       familyTree.getSpots().clear();
-      familyTree.setTitle("家系図")
+      familyTree.setTitle("家系図");
       setTitle(familyTree.getTitle());
       save();
       forceUpdate();
@@ -231,7 +242,7 @@ const App: React.FC = () => {
       save();
       forceUpdate();
     });
-  }, [])
+  }, []);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -243,15 +254,34 @@ const App: React.FC = () => {
 
     ctx.save();
     ctx.translate(offset.x, offset.y);
-    offsetRef.current = offset
+    offsetRef.current = offset;
     scaleRef.current = scale;
     ctx.scale(scale, scale);
 
-    const unscaledUpperleft = unscaledPosition({x: 0, y: 0}, offset, scale);
-    const unscaledLowerRight = unscaledPosition({x: canvasWidth(), y: canvasHeight()}, offset, scale)
+    const unscaledUpperleft = unscaledPosition({ x: 0, y: 0 }, offset, scale);
+    const unscaledLowerRight = unscaledPosition(
+      { x: canvasWidth(), y: canvasHeight() },
+      offset,
+      scale
+    );
 
-    const newTicks = drawFamilyTree(ctx, familyTree, {top: unscaledUpperleft.y, left: unscaledUpperleft.x, bottom: unscaledLowerRight.y, right: unscaledLowerRight.x}, scale, displayTicks);
-    setTicks(newTicks.map(({height, text}) => {return {height: height * scale + offset.y, text: text}}));
+    const newTicks = drawFamilyTree(
+      ctx,
+      familyTree,
+      {
+        top: unscaledUpperleft.y,
+        left: unscaledUpperleft.x,
+        bottom: unscaledLowerRight.y,
+        right: unscaledLowerRight.x,
+      },
+      scale,
+      displayTicks
+    );
+    setTicks(
+      newTicks.map(({ height, text }) => {
+        return { height: height * scale + offset.y, text: text };
+      })
+    );
 
     ctx.restore();
   }, [
@@ -265,20 +295,20 @@ const App: React.FC = () => {
   ]);
 
   const save = () => {
-    backforwordListRef.current.save(familyTree);
+    undoRedoListRef.current.save(familyTree);
   };
 
-  const loadFile = (path:string, content: string, isLoadData: boolean) => {
+  const loadFile = (path: string, content: string, isLoadData: boolean) => {
     const idxSlash = path.lastIndexOf("\\");
     const idxDot = path.lastIndexOf(".");
-    const idxStart = (idxSlash + 1 > idxDot) ? 0 : idxSlash + 1;
+    const idxStart = idxSlash + 1 > idxDot ? 0 : idxSlash + 1;
 
     const newTitle = path.slice(idxStart, idxDot);
 
     const data = JSON.parse(content);
     const personData: PersonData[] = data.personData;
     const marriageData: MarriageData[] = data.marriageData;
-    const spotData: SpotData[] = data.spotData
+    const spotData: SpotData[] = data.spotData;
 
     const newFamilyTree = new FamilyTree(personData, marriageData, spotData);
 
@@ -333,7 +363,7 @@ const App: React.FC = () => {
       forceUpdate();
     }
     save();
-  }
+  };
 
   const getMousePos = (e: React.MouseEvent) => {
     const rect = canvasRef.current?.getBoundingClientRect();
@@ -421,26 +451,26 @@ const App: React.FC = () => {
     setDisplaySpotEditor(false);
     setDisplaySpotMenu(false);
     setIsDragging(true);
-    const unscaledMousePos = unscaledPosition(pos, offset, scale)
+    const unscaledMousePos = unscaledPosition(pos, offset, scale);
     movingSpot.current = familyTree.getSpotAt(unscaledMousePos, scale);
     if (movingSpot.current !== undefined) {
       selectedOffset.current = {
         x: unscaledMousePos.x - movingSpot.current.getLeftX(),
-        y: unscaledMousePos.y - movingSpot.current.getTopY()
-      }
+        y: unscaledMousePos.y - movingSpot.current.getTopY(),
+      };
     } else {
-      movingPerson.current = familyTree.getSelectedPerson(
-        unscaledMousePos
-      );
+      movingPerson.current = familyTree.getSelectedPerson(unscaledMousePos);
       if (movingPerson.current !== undefined) {
         movingPerson.current.changeFont(FamilyTree.BOLD_FONT);
         if (moveWithDesents) {
-          movingDesentsRef.current = familyTree.getAllDescents(movingPerson.current);
+          movingDesentsRef.current = familyTree.getAllDescents(
+            movingPerson.current
+          );
         }
         selectedOffset.current = {
           x: unscaledMousePos.x - movingPerson.current.getLeftX(),
-          y: unscaledMousePos.y - movingPerson.current.getTopY()
-        }
+          y: unscaledMousePos.y - movingPerson.current.getTopY(),
+        };
       }
     }
     dragStart.current = { x: pos.x - offset.x, y: pos.y - offset.y };
@@ -455,9 +485,9 @@ const App: React.FC = () => {
       const unscaledPos = unscaledPosition(pos, offset, scale);
       const moveto: Position = {
         x: unscaledPos.x - selectedOffset.current.x,
-        y: unscaledPos.y - selectedOffset.current.y
-      }
-      movingSpot.current.moveTo(moveto);
+        y: unscaledPos.y - selectedOffset.current.y,
+      };
+      movingSpot.current.setPosition(moveto);
       forceUpdate();
     } else if (movingPerson.current === undefined) {
       setOffset({
@@ -467,19 +497,25 @@ const App: React.FC = () => {
     } else {
       const unscaledPos = unscaledPosition(pos, offset, scale);
       const unscaledOffset: Position = {
-        x: unscaledPos.x - movingPerson.current.getLeftX() - selectedOffset.current.x,
-        y: unscaledPos.y - movingPerson.current.getTopY() - selectedOffset.current.y
-      }
-      if (movingPerson.current.getIsFixedHolizontally()) {
+        x:
+          unscaledPos.x -
+          movingPerson.current.getLeftX() -
+          selectedOffset.current.x,
+        y:
+          unscaledPos.y -
+          movingPerson.current.getTopY() -
+          selectedOffset.current.y,
+      };
+      if (movingPerson.current.getIsFixedVertically()) {
         unscaledOffset.y = 0;
       }
       movingPerson.current.addOffset(unscaledOffset, 0, 0, 0);
       if (moveWithDesents) {
         for (const descent of movingDesentsRef.current) {
-          const isFixed = descent.getIsFixedHolizontally();
-          descent.setIsFixedHolizontally(false);
+          const isFixed = descent.getIsFixedVertically();
+          descent.setIsFixedVertically(false);
           descent.addOffset(unscaledOffset, 0, 0, 0);
-          descent.setIsFixedHolizontally(isFixed);
+          descent.setIsFixedVertically(isFixed);
         }
       }
       forceUpdate();
@@ -494,7 +530,7 @@ const App: React.FC = () => {
       save();
     }
     setIsDragging(false);
-    movingSpot.current = undefined
+    movingSpot.current = undefined;
     movingPerson.current = undefined;
   };
 
@@ -512,9 +548,9 @@ const App: React.FC = () => {
   const handleTicksWheel = (e: React.WheelEvent) => {
     setOffset((prev) => ({
       x: prev.x,
-      y: prev.y - e.deltaY * 0.3
-    }))
-  }
+      y: prev.y - e.deltaY * 0.3,
+    }));
+  };
 
   const handleContextMenu = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -523,13 +559,16 @@ const App: React.FC = () => {
       selectedPerson.current = undefined;
       forceUpdate();
     }
-    const spot = familyTree.getSpotAt(unscaledPosition(mousePos, offset, scale), scale);
+    const spot = familyTree.getSpotAt(
+      unscaledPosition(mousePos, offset, scale),
+      scale
+    );
     if (spot !== undefined) {
       editiongSpotData.current = {
         id: spot.getData().id,
         text: spot.getData().text,
-        position: {...spot.getData().position}
-      }
+        position: { ...spot.getData().position },
+      };
       setContextMenuVisible(false);
       setPersonMenuVisible(false);
       setDisplaySpotMenu(true);
@@ -561,21 +600,23 @@ const App: React.FC = () => {
   };
 
   const handleAddPerson = (isCenter: boolean) => {
-    const pos: Position = (isCenter) ? { x: canvasWidth() / 2, y: canvasHeight() / 2 } : menuPosition;
+    const pos: Position = isCenter
+      ? { x: canvasWidth() / 2, y: canvasHeight() / 2 }
+      : menuPosition;
     const unscaledPos = unscaledPosition(pos, offset, scale);
     window.electronAPI?.onOpenEditor(getEmptyPersonData(-1, unscaledPos));
   };
 
-  const editiongSpotData = useRef<SpotData | undefined>(undefined)
+  const editiongSpotData = useRef<SpotData | undefined>(undefined);
 
   const handleAddSpot = () => {
     editiongSpotData.current = {
       id: -1,
       text: "",
-      position: unscaledPosition(menuPosition, offset, scale)
-    }
+      position: unscaledPosition(menuPosition, offset, scale),
+    };
     setDisplaySpotEditor(true);
-  }
+  };
 
   return (
     <div
@@ -617,7 +658,14 @@ const App: React.FC = () => {
         onWheel={handleWheel}
       />
       {displayTicks && (
-        <Ticks top={2 * margin} left={margin + canvasWidth() + 2} width={tickWidth} height={canvasHeight()} ticks={ticks} onWheel={handleTicksWheel}/>
+        <Ticks
+          top={2 * margin}
+          left={margin + canvasWidth() + 2}
+          width={tickWidth}
+          height={canvasHeight()}
+          ticks={ticks}
+          onWheel={handleTicksWheel}
+        />
       )}
       {contextMenuVisible && (
         <ContextMenu
@@ -649,9 +697,11 @@ const App: React.FC = () => {
               window.electronAPI?.onOpenEditor(selectedPerson.current.raw());
             }
           }}
-          onFixHorizontally={() => {
+          onFixVertically={() => {
             if (selectedPerson.current !== undefined) {
-              selectedPerson.current.setIsFixedHolizontally(!selectedPerson.current.getIsFixedHolizontally());
+              selectedPerson.current.setIsFixedVertically(
+                !selectedPerson.current.getIsFixedVertically()
+              );
             }
           }}
         />
@@ -669,9 +719,12 @@ const App: React.FC = () => {
                 familyTree.addSpot(new Spot(editiongSpotData.current));
                 familyTree.nextSpotIdCountUp();
               } else {
-                familyTree.getSpots().get(editiongSpotData.current.id)?.setText(text);
+                familyTree
+                  .getSpots()
+                  .get(editiongSpotData.current.id)
+                  ?.setText(text);
               }
-              forceUpdate()
+              forceUpdate();
               save();
               editiongSpotData.current = undefined;
             }
@@ -687,7 +740,7 @@ const App: React.FC = () => {
           onDeleteSpot={() => {
             if (editiongSpotData.current !== undefined) {
               familyTree.deleteSpot(editiongSpotData.current.id);
-              forceUpdate()
+              forceUpdate();
               save();
               editiongSpotData.current = undefined;
             }
@@ -696,8 +749,8 @@ const App: React.FC = () => {
             setDisplaySpotEditor(true);
           }}
         />
-      )}   
-    </div>    
+      )}
+    </div>
   );
 };
 

@@ -153,7 +153,7 @@ interface PersonMenuProps {
   onSetState: (state: State) => void;
   onEditPerson: () => void;
   onShowPerson: () => void;
-  onFixHorizontally: () => void;
+  onFixVertically: () => void;
 }
 
 const PersonMenu: React.FC<PersonMenuProps> = ({
@@ -167,7 +167,7 @@ const PersonMenu: React.FC<PersonMenuProps> = ({
   onSetState,
   onEditPerson,
   onShowPerson,
-  onFixHorizontally,
+  onFixVertically,
 }) => {
   const [hoveredOn, setHoveredOn] = useState<number | undefined>(undefined);
   const [selectRelationVisible, setSelectRelationVisible] = useState(false);
@@ -240,10 +240,14 @@ const PersonMenu: React.FC<PersonMenuProps> = ({
         />
         <hr />
         <SingleMenu
-          text={selectedPerson.getIsFixedHolizontally() ? "水平方向を固定    ✓" : "水平方向を固定     "}
+          text={
+            selectedPerson.getIsFixedVertically()
+              ? "水平方向を固定    ✓"
+              : "水平方向を固定     "
+          }
           id={2}
           onClick={() => {
-            onFixHorizontally();
+            onFixVertically();
             onClose();
           }}
           available={true}

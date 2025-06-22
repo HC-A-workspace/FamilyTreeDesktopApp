@@ -1,4 +1,4 @@
-export class BackForwordList<State> {
+export class UndoRedoList<State> {
   private maxSize: number;
   private saveList: State[];
   private position: number;
@@ -46,20 +46,20 @@ export class BackForwordList<State> {
     this.isReachedMax = false;
   }
 
-  public canForword() {
+  public canRedo() {
     return this.position !== this.head;
   }
 
-  public getForwordState() {
+  public getRedoState() {
     this.position++;
     return this.saveList[this.position];
   }
 
-  public canBack() {
+  public canUndo() {
     return this.position !== this.tail;
   }
 
-  public getBackState() {
+  public getUndoState() {
     this.position--;
     return this.saveList[this.position];
   }

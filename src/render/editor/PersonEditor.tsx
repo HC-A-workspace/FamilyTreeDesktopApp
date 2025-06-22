@@ -86,7 +86,6 @@ const ItemTitle: React.FC<ItemTitleProp> = ({
   );
 };
 
-
 function useWindowSize() {
   const [size, setSize] = useState({
     width: window.innerWidth,
@@ -110,14 +109,18 @@ function useWindowSize() {
 
 const PersonEditor: React.FC = () => {
   const titleWidth = 150;
-  const [nameStyle, setNameStyle] = useState<NameStyle>(NameStyle.WithFamilyname);
-  const [personData, setPersonData] = useState(getEmptyPersonData(-1, {x: 0, y: 0}));
+  const [nameStyle, setNameStyle] = useState<NameStyle>(
+    NameStyle.WithFamilyname
+  );
+  const [personData, setPersonData] = useState(
+    getEmptyPersonData(-1, { x: 0, y: 0 })
+  );
   const { width } = useWindowSize();
 
   useEffect(() => {
     window.electronAPI?.onLoadDataOnEditor((data) => {
       setPersonData(data);
-      if (data.name.givenName !== "" ) {
+      if (data.name.givenName !== "") {
         setNameStyle(getNameStyle(data.name));
       } else {
         setNameStyle(NameStyle.WithFamilyname);
@@ -280,7 +283,7 @@ const PersonEditor: React.FC = () => {
         width: width,
         // height: height,
         // border: "1px solid black",
-        backgroundColor: "rgba(243, 152, 77, 0.12)"
+        backgroundColor: "rgba(243, 152, 77, 0.12)",
       }}
     >
       <div
@@ -759,8 +762,8 @@ const PersonEditor: React.FC = () => {
             onChange={(e) => {
               setPersonData({
                 ...personData,
-                description: e.target.value
-              })
+                description: e.target.value,
+              });
             }}
           />
         </div>
@@ -803,7 +806,7 @@ const PersonEditor: React.FC = () => {
             backgroundColor: "rgb(255, 255, 255)",
           }}
           onClick={() => {
-            if (personData.name.givenName !=="") {
+            if (personData.name.givenName !== "") {
               window.electronAPI?.onSendDataFromEditor(personData);
               window.electronAPI?.onEditorClose();
             }

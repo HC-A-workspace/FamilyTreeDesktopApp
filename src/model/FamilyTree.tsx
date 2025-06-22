@@ -1,4 +1,9 @@
-import { FontData, Queue, sameElementList, type Position } from "./FundamentalData";
+import {
+  FontData,
+  Queue,
+  sameElementList,
+  type Position,
+} from "./FundamentalData";
 import { Marriage, type MarriageData } from "./Marriage";
 import { Person, type PersonData } from "./Person";
 import { Spot, SpotData } from "./Spot";
@@ -17,23 +22,23 @@ export class FamilyTree {
   public static NORMAL_FONT: FontData = {
     weight: 400,
     size: 20,
-    family: ['Yu Mincho']  
-  }
+    family: ["Yu Mincho"],
+  };
   public static BOLD_FONT: FontData = {
     weight: 700,
     size: 20,
-    family: ['Yu Mincho']
-  }
+    family: ["Yu Mincho"],
+  };
   public static YEAR_FONT: FontData = {
     weight: 400,
     size: 8,
-    family: ['serif']
-  }
+    family: ["serif"],
+  };
   public static BYWORDS_FONT: FontData = {
     weight: 400,
     size: 8,
-    family: ['serif']
-  }
+    family: ["serif"],
+  };
   private isVertical = true;
   private showBywords = true;
   private showYears = true;
@@ -44,7 +49,11 @@ export class FamilyTree {
   private rightX: number = 0;
 
   constructor(people: Person[], marriage: Marriage[], spots: Spot[]);
-  constructor(peopleData: PersonData[], marriagesData: MarriageData[], spotData: SpotData[]);
+  constructor(
+    peopleData: PersonData[],
+    marriagesData: MarriageData[],
+    spotData: SpotData[]
+  );
   constructor(
     people: Person[] | PersonData[],
     marriages: Marriage[] | MarriageData[],
@@ -55,7 +64,10 @@ export class FamilyTree {
         ? []
         : people[0] instanceof Person
           ? (people as Person[]).map((p) => [p.getId(), p])
-          : (people as PersonData[]).map((p) => [p.id, new Person(p, this.showBywords, this.showYears, this.isVertical)])
+          : (people as PersonData[]).map((p) => [
+              p.id,
+              new Person(p, this.showBywords, this.showYears, this.isVertical),
+            ])
     );
 
     this.marriageMap = new Map(
@@ -67,11 +79,12 @@ export class FamilyTree {
     );
 
     this.spotList = new Map(
-      (spots.length === 0)
-        ? [] 
-        : (spots[0] instanceof Spot)
+      spots.length === 0
+        ? []
+        : spots[0] instanceof Spot
           ? (spots as Spot[]).map((spot) => [spot.getId(), spot.clone()])
-          : (spots as SpotData[]).map((spot) => [spot.id, new Spot(spot)]));
+          : (spots as SpotData[]).map((spot) => [spot.id, new Spot(spot)])
+    );
 
     if (people.length > 0) {
       this.personMap = new Map();
@@ -94,7 +107,15 @@ export class FamilyTree {
           this.leftX = Math.min(this.leftX, person.getLeftX());
           this.rightX = Math.max(this.rightX, person.getRightX());
         } else {
-          this.personMap.set(person.id, new Person(person, this.showBywords, this.showYears, this.isVertical));
+          this.personMap.set(
+            person.id,
+            new Person(
+              person,
+              this.showBywords,
+              this.showYears,
+              this.isVertical
+            )
+          );
           this.topY = Math.min(this.topY, person.position.y);
           this.bottomY = Math.max(this.bottomY, person.position.y);
           this.leftX = Math.min(this.leftX, person.position.x);
@@ -156,7 +177,7 @@ export class FamilyTree {
       }
       this.showBywords = showBywords;
     }
-  }  
+  }
 
   setShowYears(showYears: boolean) {
     if (this.showYears !== showYears) {
@@ -164,8 +185,8 @@ export class FamilyTree {
         person.setShowYears(showYears);
       }
       this.showYears = showYears;
-    }  
-  }  
+    }
+  }
 
   setIsVertical(isVertical: boolean) {
     if (this.isVertical !== isVertical) {
@@ -173,7 +194,7 @@ export class FamilyTree {
         person.setIsVertical(isVertical);
       }
       this.isVertical = isVertical;
-    }  
+    }
   }
 
   getNextPersonId() {
@@ -378,10 +399,7 @@ export class FamilyTree {
       ])
     );
     const spotRules = new Map<number, number>(
-      Array.from(this.spotList.keys()).map((oldIdx, newIdx) => [
-        oldIdx,
-        newIdx,
-      ])
+      Array.from(this.spotList.keys()).map((oldIdx, newIdx) => [oldIdx, newIdx])
     );
 
     this.personMap = new Map<number, Person>(
@@ -397,12 +415,11 @@ export class FamilyTree {
       })
     );
     this.spotList = new Map<number, Spot>(
-        Array.from(this.spotList.values()).map((s) => {
+      Array.from(this.spotList.values()).map((s) => {
         s.normaliseId(spotRules);
         return [s.getId(), s];
       })
-
-    )
+    );
     this.nextPersonId = this.personMap.size;
     this.nextMarriageId = this.marriageMap.size;
   }
@@ -438,7 +455,7 @@ export class FamilyTree {
   nextSpotIdCountUp() {
     this.nextSpotId++;
   }
-  
+
   deletePersonOfMarriage(mId: number, pId: number) {
     const marriage = this.findMarriageById(mId);
     marriage?.deleteSprouse(pId);
@@ -557,7 +574,8 @@ export class FamilyTree {
       }
 
       for (const adoptedChildId of this.getAdoptedChildrenIds(parentId)) {
-        if (adoptedChildId === undefined || checked.has(adoptedChildId)) continue;
+        if (adoptedChildId === undefined || checked.has(adoptedChildId))
+          continue;
         const adoptedChild = this.findPersonById(adoptedChildId);
         if (adoptedChild === undefined) continue;
         checked.add(adoptedChildId);
@@ -924,7 +942,7 @@ export class FamilyTree {
   getSpotAt(unscaledPosition: Position, scale: number): Spot | undefined {
     for (const [, spot] of this.spotList) {
       if (spot.isContained(unscaledPosition, scale)) {
-        return spot
+        return spot;
       }
     }
     return undefined;

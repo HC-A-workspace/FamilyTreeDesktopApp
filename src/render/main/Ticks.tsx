@@ -1,12 +1,12 @@
-import React from "react"
+import React from "react";
 
 interface TicksProperties {
-  top: number,
-  left: number,
-  width: number,
-  height: number,
-  ticks: {height: number, text: string}[],
-  onWheel: (e: React.WheelEvent) => void
+  top: number;
+  left: number;
+  width: number;
+  height: number;
+  ticks: { height: number; text: string }[];
+  onWheel: (e: React.WheelEvent) => void;
 }
 
 const Ticks: React.FC<TicksProperties> = ({
@@ -15,25 +15,37 @@ const Ticks: React.FC<TicksProperties> = ({
   width,
   height,
   ticks,
-  onWheel
+  onWheel,
 }) => {
   return (
-    <div 
+    <div
       style={{
         position: "absolute",
         top: top,
         left: left,
         width: width,
         height: height,
-      }}          
+      }}
       onWheel={onWheel}
     >
-      {ticks.map(({height, text}, idx) => (
+      {ticks.map(({ height, text }, idx) => (
         <React.Fragment key={idx}>
-          <div style={{position: "absolute", top: height - 10, left: 10, height: 20, display: "flex", alignItems: "center"}}>{text}</div>
+          <div
+            style={{
+              position: "absolute",
+              top: height - 10,
+              left: 10,
+              height: 20,
+              display: "flex",
+              alignItems: "center",
+            }}
+          >
+            {text}
+          </div>
         </React.Fragment>
       ))}
-    </div>)
-}
+    </div>
+  );
+};
 
-export default Ticks
+export default Ticks;

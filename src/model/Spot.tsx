@@ -1,9 +1,9 @@
 import { FontData, getFont, Position } from "./FundamentalData";
 
 export interface SpotData {
-  id: number
-  text: string,
-  position: Position
+  id: number;
+  text: string;
+  position: Position;
 }
 
 export class Spot {
@@ -11,13 +11,13 @@ export class Spot {
   private static font: FontData = {
     weight: 600,
     size: 20,
-    family: ["MS Gothic"]
-  }
+    family: ["MS Gothic"],
+  };
   private width: number = 0;
   private height: number = 0;
 
-  constructor (data: SpotData) {
-    this.data = {...data, position: {...data.position}}
+  constructor(data: SpotData) {
+    this.data = { ...data, position: { ...data.position } };
     this.calculateSize();
   }
 
@@ -26,19 +26,23 @@ export class Spot {
     ctx.font = getFont(Spot.font);
     const metric = ctx.measureText(this.data.text);
     this.width = metric.width;
-    this.height = metric.actualBoundingBoxAscent + metric.actualBoundingBoxDescent;
-
+    this.height =
+      metric.actualBoundingBoxAscent + metric.actualBoundingBoxDescent;
   }
 
   draw(ctx: CanvasRenderingContext2D, scale: number) {
     const resizedFont: FontData = {
       ...Spot.font,
       size: Spot.font.size / scale,
-    }
-    ctx.fillStyle = "black"
+    };
+    ctx.fillStyle = "black";
     ctx.font = getFont(resizedFont);
-    ctx.textBaseline = "middle"
-    ctx.fillText(this.data.text, this.data.position.x, this.data.position.y + this.height / (2 * scale));
+    ctx.textBaseline = "middle";
+    ctx.fillText(
+      this.data.text,
+      this.data.position.x,
+      this.data.position.y + this.height / (2 * scale)
+    );
   }
 
   clone() {
@@ -46,15 +50,25 @@ export class Spot {
   }
 
   equal(spot: Spot) {
-    return (this.data.text === spot.data.text) && (this.data.position.x === spot.data.position.x) && (this.data.position.y === spot.data.position.y);
+    return (
+      this.data.text === spot.data.text &&
+      this.data.position.x === spot.data.position.x &&
+      this.data.position.y === spot.data.position.y
+    );
   }
 
   isContained(uncaledPosition: Position, scale: number): boolean {
     const offset = 0;
     const scaledWidth = (this.width + 2 * offset) / scale;
     const scaledHeight = (this.height + 2 * offset) / scale;
-    if (this.data.position.x  <= uncaledPosition.x && uncaledPosition.x <= this.data.position.x + scaledWidth) {
-      if(this.data.position.y <= uncaledPosition.y && uncaledPosition.y <= this.data.position.y + scaledHeight) {
+    if (
+      this.data.position.x <= uncaledPosition.x &&
+      uncaledPosition.x <= this.data.position.x + scaledWidth
+    ) {
+      if (
+        this.data.position.y <= uncaledPosition.y &&
+        uncaledPosition.y <= this.data.position.y + scaledHeight
+      ) {
         return true;
       }
     }
@@ -69,18 +83,17 @@ export class Spot {
     return this.data.position.y;
   }
 
-  moveTo(position: Position) {
-    this.data.position.x = position.x;
-    this.data.position.y = position.y;
-  }
-
   setText(text: string) {
-    this.data = {id: this.data.id, text: text, position: {...this.data.position}}
+    this.data = {
+      id: this.data.id,
+      text: text,
+      position: { ...this.data.position },
+    };
     this.calculateSize();
   }
 
   getData() {
-    return this.data
+    return this.data;
   }
 
   setPosition(position: Position) {

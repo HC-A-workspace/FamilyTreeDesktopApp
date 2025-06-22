@@ -8,7 +8,7 @@ export function saveFamilyTree(familyTree: FamilyTree) {
   const data = {
     personData: familyTree.getPersonData(),
     marriageData: familyTree.getMarriageData(),
-    spotData: familyTree.getSpotData()
+    spotData: familyTree.getSpotData(),
   };
 
   const blob = new Blob([JSON.stringify(data, null, 2)], {

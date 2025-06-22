@@ -7,12 +7,12 @@ export abstract class TextInformation {
   protected font: FontData = {
     weight: 400,
     size: 20,
-    family: ['Yu Mincho']
+    family: ["Yu Mincho"],
   };
   protected color = "";
-  protected relativeUL: Position = {x: 0, y: 0}
+  protected relativeUL: Position = { x: 0, y: 0 };
   protected text = "";
-  protected singleTextInfos: SingleTextInformation[] = []
+  protected singleTextInfos: SingleTextInformation[] = [];
 
   constructor();
   constructor(text: string, font: string | FontData, color: string);
@@ -26,10 +26,10 @@ export abstract class TextInformation {
         this.font = {
           weight: Number(weightSize[0]),
           size: Number(weightSize[1]),
-          family: fonts.map((str) => str.replace(/['"]/g, "").trim().trim())
-        }
+          family: fonts.map((str) => str.replace(/['"]/g, "").trim().trim()),
+        };
       } else {
-        this.font = font
+        this.font = font;
       }
     }
     this.align();
@@ -44,7 +44,7 @@ export abstract class TextInformation {
   }
 
   getFont() {
-    return getFont(this.font)
+    return getFont(this.font);
   }
 
   getColor() {
@@ -106,12 +106,10 @@ export abstract class TextInformation {
 
   protected abstract align(): void;
 
-
   abstract draw(ctx: CanvasRenderingContext2D, position: Position): void;
-
 }
 
-export class VerticalTextInformation extends TextInformation{
+export class VerticalTextInformation extends TextInformation {
   protected align(): void {
     const ctx = document.createElement("canvas").getContext("2d")!;
     ctx.font = this.getFont();
@@ -121,14 +119,18 @@ export class VerticalTextInformation extends TextInformation{
 
     this.singleTextInfos = [];
     for (const c of this.split()) {
-      const singleInfo = new SingleTextInformation(c, this.getFont(), this.color);
+      const singleInfo = new SingleTextInformation(
+        c,
+        this.getFont(),
+        this.color
+      );
       singleInfo.translate(0, this.height);
       this.singleTextInfos.push(singleInfo);
       this.height += singleInfo.getHeight() + spacing;
       this.width = Math.max(this.width, singleInfo.getWidth());
     }
     for (const singleInfo of this.singleTextInfos) {
-      singleInfo.translate((this.width - singleInfo.getWidth()) / 2, 0)
+      singleInfo.translate((this.width - singleInfo.getWidth()) / 2, 0);
     }
     this.height -= spacing;
   }
@@ -136,19 +138,19 @@ export class VerticalTextInformation extends TextInformation{
   draw(ctx: CanvasRenderingContext2D, position: Position): void {
     ctx.fillStyle = this.color;
     for (const c of this.singleTextInfos) {
-      c.draw(ctx, this.relativeUL, position)
+      c.draw(ctx, this.relativeUL, position);
     }
   }
 
   split() {
-    const pattern = /[\x00-\x7F]*[a-z][\x00-\x7F]*[a-z][\x00-\x7F]*/g
-    const numbers = /[0-9]+/g
+    const pattern = /[\x00-\x7F]*[a-z][\x00-\x7F]*[a-z][\x00-\x7F]*/g;
+    const numbers = /[0-9]+/g;
     const matched = this.text.match(pattern);
-    let splited: string[] = []
+    let splited: string[] = [];
     if (matched === null) {
       const numberMatched = this.text.match(numbers);
       if (numberMatched === null) {
-        splited = this.text.split("")
+        splited = this.text.split("");
       } else {
         let current = this.text;
         for (const num of numberMatched) {
@@ -197,21 +199,21 @@ export class VerticalTextInformation extends TextInformation{
     clone.singleTextInfos = [
       ...this.singleTextInfos.map((info) => info.clone()),
     ];
-    clone.relativeUL = {...this.relativeUL}; 
+    clone.relativeUL = { ...this.relativeUL };
     return clone;
   }
 }
 
-export class HorizontalTextInformation extends TextInformation{
+export class HorizontalTextInformation extends TextInformation {
   protected align(): void {
-      const ctx = document.createElement("canvas").getContext("2d")!;
-      ctx.font = this.getFont();
-      const metric = ctx.measureText(this.text);
-      this.height =
-        metric.actualBoundingBoxAscent + metric.actualBoundingBoxDescent;
-      this.width = metric.width;
+    const ctx = document.createElement("canvas").getContext("2d")!;
+    ctx.font = this.getFont();
+    const metric = ctx.measureText(this.text);
+    this.height =
+      metric.actualBoundingBoxAscent + metric.actualBoundingBoxDescent;
+    this.width = metric.width;
   }
-  
+
   draw(ctx: CanvasRenderingContext2D, position: Position): void {
     ctx.fillStyle = this.color;
     ctx.font = this.getFont();
@@ -230,7 +232,7 @@ export class HorizontalTextInformation extends TextInformation{
     clone.color = this.color;
     clone.width = this.width;
     clone.height = this.height;
-    clone.relativeUL = {...this.relativeUL}; 
+    clone.relativeUL = { ...this.relativeUL };
     return clone;
   }
 }

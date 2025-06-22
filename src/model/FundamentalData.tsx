@@ -6,7 +6,6 @@ export const Sex = {
 
 export type Sex = (typeof Sex)[keyof typeof Sex];
 
-// eslint-disable-next-line react-refresh/only-export-components
 export const SexLabel: Record<Sex, string> = {
   [Sex.Male]: "男",
   [Sex.Female]: "女",
@@ -20,7 +19,6 @@ export interface Date {
   day?: number;
 }
 
-// eslint-disable-next-line react-refresh/only-export-components
 export function dateToString(date: Date): string {
   let str: string = "";
   if (date.isBC !== false) {
@@ -43,18 +41,11 @@ export interface Position {
   y: number;
 }
 
-// eslint-disable-next-line react-refresh/only-export-components
-export function nullPosition(): Position {
-  return { x: Number.MAX_SAFE_INTEGER, y: Number.MAX_SAFE_INTEGER };
-}
-
-// eslint-disable-next-line react-refresh/only-export-components
 export function positionOverwrite(position: Position, x: number, y: number) {
   position.x = x;
   position.y = y;
 }
 
-// eslint-disable-next-line react-refresh/only-export-components
 export function sameElementList<T>(list1: T[], list2: T[]) {
   if (list1.length !== list2.length) return false;
   const sortedA = [...list1].sort();
@@ -62,7 +53,6 @@ export function sameElementList<T>(list1: T[], list2: T[]) {
   return sortedA.every((v, i) => v === sortedB[i]);
 }
 
-// eslint-disable-next-line react-refresh/only-export-components
 export function emptyStringToUndefined(
   text: string | undefined
 ): string | undefined {
@@ -89,8 +79,8 @@ export interface FontData {
 }
 
 export function getFont(font: FontData) {
-  const weightSize = `${font.weight} ${font.size}pt`
-  const fonts = font.family.map(s => `'${s}'`).join(", ");
+  const weightSize = `${font.weight} ${font.size}pt`;
+  const fonts = font.family.map((s) => `'${s}'`).join(", ");
   return `${weightSize} ${fonts}`;
 }
 

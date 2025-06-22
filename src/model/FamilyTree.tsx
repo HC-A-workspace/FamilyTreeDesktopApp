@@ -8,10 +8,140 @@ import { Marriage, type MarriageData } from "./Marriage";
 import { Person, type PersonData } from "./Person";
 import { Spot, SpotData } from "./Spot";
 
-export type PersonId = number | undefined;
-export type MarriageId = number | undefined;
+type PersonId = number | undefined;
+type MarriageId = number | undefined;
 
-export class FamilyTree {
+export interface FamilyTreeSetting {
+  nameFont: FontData;
+  selectedNameFont: FontData;
+  yearFont: FontData;
+  bywordsFont: FontData;
+  isVertical: boolean;
+  showBywords: boolean;
+  showYears: boolean;
+  showGrid: boolean;
+  showSideYear: boolean;
+  backgroundColor: string;
+}
+
+export const defaultSetting: FamilyTreeSetting = {
+  nameFont: {
+    weight: 400,
+    size: 20,
+    family: ["Yu Mincho"],
+  },
+  selectedNameFont: {
+    weight: 700,
+    size: 20,
+    family: ["Yu Mincho"],
+  },
+  bywordsFont: {
+    weight: 400,
+    size: 8,
+    family: ["serif"],
+  },
+  yearFont: {
+    weight: 400,
+    size: 8,
+    family: ["serif"],
+  },
+  isVertical: true,
+  showBywords: true,
+  showGrid: true,
+  showSideYear: true,
+  showYears: true,
+  backgroundColor: "rgba(128, 253, 12, 0.27)",
+};
+
+abstract class Setting {
+  static setting: FamilyTreeSetting = defaultSetting;
+
+  getSetting() {
+    return Setting.setting;
+  }
+
+  constructor(setting: FamilyTreeSetting) {
+    this.setSetting(setting);
+  }
+
+  protected setSetting(setting: FamilyTreeSetting) {
+    Setting.setting = {
+      ...setting,
+      nameFont: { ...setting.nameFont },
+      selectedNameFont: { ...setting.selectedNameFont },
+      bywordsFont: { ...setting.bywordsFont },
+      yearFont: { ...setting.yearFont },
+    };
+  }
+
+  getNameFont() {
+    return Setting.setting.nameFont;
+  }
+
+  abstract setNameFont(font: FontData): void;
+
+  getSelectedNameFont() {
+    return Setting.setting.selectedNameFont;
+  }
+
+  abstract setSelectedNameFont(font: FontData): void;
+
+  getBywordsFont() {
+    return Setting.setting.bywordsFont;
+  }
+
+  abstract setBywordsFont(font: FontData): void;
+
+  getYearFont() {
+    return Setting.setting.yearFont;
+  }
+
+  abstract setYearFont(font: FontData): void;
+
+  getIsVertical() {
+    return Setting.setting.isVertical;
+  }
+
+  abstract setIsVertical(isVertical: boolean): void;
+
+  getShowBywords() {
+    return Setting.setting.showBywords;
+  }
+
+  abstract setShowBywords(showBywords: boolean): void;
+
+  getShowGrid() {
+    return Setting.setting.showGrid;
+  }
+
+  setShowGrid(showGrid: boolean) {
+    Setting.setting.showGrid = showGrid;
+  }
+
+  getShowSideYear() {
+    return Setting.setting.showSideYear;
+  }
+
+  setShowSideYear(showSideYear: boolean) {
+    Setting.setting.showSideYear = showSideYear;
+  }
+
+  getShowYears() {
+    return Setting.setting.showYears;
+  }
+
+  abstract setShowYears(showYears: boolean): void;
+
+  getBackgroundColor() {
+    return Setting.setting.backgroundColor;
+  }
+
+  setBackgroundColor(backgroundColor: string) {
+    Setting.setting.backgroundColor = backgroundColor;
+  }
+}
+
+export class FamilyTree extends Setting {
   private personMap: Map<number, Person>;
   private marriageMap: Map<number, Marriage>;
   private spotList: Map<number, Spot>;
@@ -19,55 +149,37 @@ export class FamilyTree {
   private nextPersonId: number = 0;
   private nextMarriageId: number = 0;
   private nextSpotId: number = 0;
-  public static NORMAL_FONT: FontData = {
-    weight: 400,
-    size: 20,
-    family: ["Yu Mincho"],
-  };
-  public static BOLD_FONT: FontData = {
-    weight: 700,
-    size: 20,
-    family: ["Yu Mincho"],
-  };
-  public static YEAR_FONT: FontData = {
-    weight: 400,
-    size: 8,
-    family: ["serif"],
-  };
-  public static BYWORDS_FONT: FontData = {
-    weight: 400,
-    size: 8,
-    family: ["serif"],
-  };
-  private isVertical = true;
-  private showBywords = true;
-  private showYears = true;
 
   private topY: number = 0;
   private bottomY: number = 0;
   private leftX: number = 0;
   private rightX: number = 0;
 
-  constructor(people: Person[], marriage: Marriage[], spots: Spot[]);
+  constructor(
+    people: Person[],
+    marriage: Marriage[],
+    spots: Spot[],
+    setting: FamilyTreeSetting
+  );
   constructor(
     peopleData: PersonData[],
     marriagesData: MarriageData[],
-    spotData: SpotData[]
+    spotData: SpotData[],
+    setting: FamilyTreeSetting
   );
   constructor(
     people: Person[] | PersonData[],
     marriages: Marriage[] | MarriageData[],
-    spots: Spot[] | SpotData[]
+    spots: Spot[] | SpotData[],
+    setting: FamilyTreeSetting
   ) {
+    super(setting);
     this.personMap = new Map(
       people.length === 0
         ? []
         : people[0] instanceof Person
           ? (people as Person[]).map((p) => [p.getId(), p])
-          : (people as PersonData[]).map((p) => [
-              p.id,
-              new Person(p, this.showBywords, this.showYears, this.isVertical),
-            ])
+          : (people as PersonData[]).map((p) => [p.id, new Person(p)])
     );
 
     this.marriageMap = new Map(
@@ -107,15 +219,7 @@ export class FamilyTree {
           this.leftX = Math.min(this.leftX, person.getLeftX());
           this.rightX = Math.max(this.rightX, person.getRightX());
         } else {
-          this.personMap.set(
-            person.id,
-            new Person(
-              person,
-              this.showBywords,
-              this.showYears,
-              this.isVertical
-            )
-          );
+          this.personMap.set(person.id, new Person(person));
           this.topY = Math.min(this.topY, person.position.y);
           this.bottomY = Math.max(this.bottomY, person.position.y);
           this.leftX = Math.min(this.leftX, person.position.x);
@@ -132,68 +236,40 @@ export class FamilyTree {
   }
 
   clone(): FamilyTree {
-    const clone = new FamilyTree([], [], []);
-    clone.personMap = new Map(
-      Array.from(this.personMap).map(
-        (p) => [p[0], p[1].clone()] as [number, Person]
-      )
-    );
-    clone.marriageMap = new Map(
-      Array.from(this.marriageMap).map(
-        (m) => [m[0], m[1].clone()] as [number, Marriage]
-      )
-    );
-    clone.spotList = new Map(
-      Array.from(this.spotList).map(
-        (m) => [m[0], m[1].clone()] as [number, Spot]
-      )
+    const clone = new FamilyTree(
+      Array.from(this.personMap.values()),
+      Array.from(this.marriageMap.values()),
+      Array.from(this.spotList.values()),
+      FamilyTree.setting
     );
     clone.title = this.title;
-    clone.nextMarriageId = this.nextMarriageId;
-    clone.nextPersonId = this.nextPersonId;
-    clone.topY = this.topY;
-    clone.bottomY = this.bottomY;
-    clone.leftX = this.leftX;
-    clone.rightX = this.rightX;
     return clone;
   }
 
-  getShowBywords() {
-    return this.showBywords;
-  }
-
-  getShowYears() {
-    return this.showYears;
-  }
-
-  getIsVertical() {
-    return this.isVertical;
+  personStyleUpdate() {
+    for (const [, person] of this.personMap) {
+      person.update();
+    }
   }
 
   setShowBywords(showBywords: boolean) {
-    if (this.showBywords !== showBywords) {
-      for (const [, person] of this.personMap) {
-        person.setShowBywords(showBywords);
-      }
-      this.showBywords = showBywords;
+    if (FamilyTree.setting.showBywords !== showBywords) {
+      this.personStyleUpdate();
+      FamilyTree.setting.showBywords = showBywords;
     }
   }
 
   setShowYears(showYears: boolean) {
-    if (this.showYears !== showYears) {
-      for (const [, person] of this.personMap) {
-        person.setShowYears(showYears);
-      }
-      this.showYears = showYears;
+    if (FamilyTree.setting.showYears !== showYears) {
+      this.personStyleUpdate();
+      FamilyTree.setting.showYears = showYears;
     }
   }
 
   setIsVertical(isVertical: boolean) {
-    if (this.isVertical !== isVertical) {
-      for (const [, person] of this.personMap) {
-        person.setIsVertical(isVertical);
-      }
-      this.isVertical = isVertical;
+    if (FamilyTree.setting.isVertical !== isVertical) {
+      this.personStyleUpdate();
+      FamilyTree.setting.isVertical = isVertical;
     }
   }
 
@@ -507,7 +583,8 @@ export class FamilyTree {
     }
   }
 
-  load(familyTree: FamilyTree) {
+  load(familyTree: FamilyTree, setting: FamilyTreeSetting) {
+    this.setSetting(setting);
     this.personMap = new Map(
       Array.from(familyTree.personMap).map(
         (p) => [p[0], p[1].clone()] as [number, Person]
@@ -950,5 +1027,26 @@ export class FamilyTree {
 
   getNextSpotId() {
     return this.nextSpotId;
+  }
+
+  setNameFont(font: FontData): void {
+    FamilyTree.setting.nameFont = { ...font };
+    this.personStyleUpdate();
+  }
+  setSelectedNameFont(font: FontData): void {
+    FamilyTree.setting.selectedNameFont = { ...font };
+    this.personStyleUpdate();
+  }
+  setBywordsFont(font: FontData): void {
+    FamilyTree.setting.bywordsFont = { ...font };
+    this.personStyleUpdate();
+  }
+  setYearFont(font: FontData): void {
+    FamilyTree.setting.yearFont = { ...font };
+    this.personStyleUpdate();
+  }
+  setFamilyTreeSetting(setting: FamilyTreeSetting) {
+    this.setSetting(setting);
+    this.personStyleUpdate();
   }
 }

@@ -1,3 +1,4 @@
+import { FamilyTreeSetting } from "../model/FamilyTree";
 import { PersonData } from "../model/Person";
 
 export {};
@@ -26,6 +27,12 @@ declare global {
       onShowBywords: (callback: (isShowingBywords: boolean) => void) => void;
       onShowYears: (callback: (isShowingYears: boolean) => void) => void;
       onIsVertical: (callback: (isVertical: boolean) => void) => void;
+      onOpenSettingEditor: (callback: () => void) => void;
+      openSettingEditor: () => void;
+      onSendSettingFromSettingEditor: (setting: FamilyTreeSetting) => void;
+      onSendSettingToMain: (
+        callback: (setting: FamilyTreeSetting) => void
+      ) => void;
     };
   }
 }

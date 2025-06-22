@@ -28,6 +28,7 @@ export interface PersonData {
   works: string[];
   description: string;
   words: string[];
+  isFixedVertically: boolean;
   position: Position;
 }
 
@@ -42,6 +43,7 @@ export function getEmptyPersonData(id: number, position: Position): PersonData {
     aliases: [],
     works: [],
     words: [],
+    isFixedVertically: false,
     description: "",
     tagIds: [],
     marriageIds: [],
@@ -87,6 +89,7 @@ export function personDataClone(personData: PersonData): PersonData {
     works: [...personData.works],
     description: personData.description,
     words: [...personData.words],
+    isFixedVertically: personData.isFixedVertically,
     position: { ...personData.position },
   };
 }
@@ -103,168 +106,53 @@ function getNameColor(sex: Sex) {
 }
 
 export class Person {
-  private data: PersonData;
-  private nameText: TextInformation;
+  private data: PersonData = getEmptyPersonData(-1, { x: 0, y: 0 });
+  private nameText: TextInformation = new VerticalTextInformation();
   private bywordsText?: TextInformation;
   private birthText?: HorizontalTextInformation;
   private deathText?: HorizontalTextInformation;
   private height: number = 0;
   private width: number = 0;
-  private isVertical = true;
-  private showBywords = true;
-  private showYears = true;
-  private isFixedVertically = false;
+  private isSelected = false;
 
-  constructor(
-    data: PersonData,
-    showBywords: boolean,
-    showYears: boolean,
-    nameText: TextInformation,
-    bywordsText?: TextInformation,
-    birthText?: HorizontalTextInformation,
-    deathText?: HorizontalTextInformation,
-    height?: number,
-    width?: number
-  );
-  constructor(
-    data: PersonData,
-    showBywords: boolean,
-    showYears: boolean,
-    isVertical?: boolean,
-    color?: string,
-    font?: FontData
-  );
-  constructor(
-    data: PersonData,
-    showBywords: boolean,
-    showYears: boolean,
-    isVertical?: boolean | TextInformation,
-    color?: string | TextInformation,
-    font?: FontData | HorizontalTextInformation,
-    deathText?: HorizontalTextInformation,
-    height?: number,
-    width?: number
-  ) {
-    this.data = personDataClone(data);
-    this.showBywords = showBywords;
-    this.showYears = showYears;
-
-    if (isVertical instanceof TextInformation) {
-      this.nameText = isVertical.clone();
-      this.isVertical = this.nameText instanceof VerticalTextInformation;
+  constructor(person: Person);
+  constructor(person: PersonData);
+  constructor(person: PersonData | Person) {
+    if (person instanceof Person) {
+      this.data = personDataClone(person.data);
+      this.nameText = person.nameText.clone();
+      this.bywordsText = person.bywordsText?.clone();
+      this.birthText = person.birthText?.clone();
+      this.deathText = person.deathText?.clone();
+      this.height = person.height;
+      this.width = person.width;
     } else {
-      const newFont =
-        font === undefined ? FamilyTree.NORMAL_FONT : (font as FontData);
-      const newColor =
-        color === undefined ? getNameColor(this.data.sex) : (color as string);
-      this.isVertical = isVertical === undefined || (isVertical as boolean);
-      if (this.isVertical) {
-        this.nameText = new VerticalTextInformation(
-          displayName(this.data.name),
-          newFont,
-          newColor
-        );
-      } else {
-        this.nameText = new HorizontalTextInformation(
-          displayName(this.data.name),
-          newFont,
-          newColor
-        );
-      }
-    }
-    if (color instanceof TextInformation) {
-      this.bywordsText = color.clone();
-    } else if (this.data.bywords !== "" && this.showBywords) {
-      if (this.isVertical) {
-        this.bywordsText = new VerticalTextInformation(
-          this.data.bywords,
-          FamilyTree.BYWORDS_FONT,
-          "rgb(0, 0, 0)"
-        );
-      } else {
-        this.bywordsText = new HorizontalTextInformation(
-          this.data.bywords,
-          FamilyTree.BYWORDS_FONT,
-          "rgb(0, 0, 0)"
-        );
-      }
-    }
-    if (font instanceof HorizontalTextInformation) {
-      this.birthText = font.clone();
-    } else if (this.data.birthday?.year !== undefined && this.isVertical) {
-      const prefix = this.data.birthday.isBC ? "前" : "";
-      this.birthText = new HorizontalTextInformation(
-        `${prefix}${this.data.birthday?.year}年 生`,
-        FamilyTree.YEAR_FONT,
-        "rgb(0, 0, 0)"
-      );
-    }
-
-    if (deathText !== undefined) {
-      this.deathText = deathText.clone();
-    } else if (this.data.deathday?.year !== undefined && this.isVertical) {
-      const prefix = this.data.deathday.isBC ? "前" : "";
-      this.deathText = new HorizontalTextInformation(
-        `${prefix}${this.data.deathday?.year}年 没`,
-        FamilyTree.YEAR_FONT,
-        "rgb(0, 0, 0)"
-      );
-    }
-    if (this.isVertical === false && this.birthText === undefined) {
-      if (
-        this.data.birthday?.year !== undefined ||
-        this.data.deathday?.year !== undefined
-      ) {
-        const birthPrefix =
-          this.data.birthday?.isBC === undefined ||
-          this.data.birthday.isBC === false
-            ? ""
-            : "BC";
-        const deathPrefix =
-          this.data.deathday?.isBC === undefined ||
-          this.data.deathday.isBC === false
-            ? ""
-            : "BC";
-        const birth = birthPrefix + (this.data.birthday?.year ?? "?");
-        const death = deathPrefix + (this.data.deathday?.year ?? "?");
-        this.birthText = new HorizontalTextInformation(
-          `${birth} ~ ${death}`,
-          FamilyTree.YEAR_FONT,
-          "rgb(0, 0, 0)"
-        );
-      }
-    }
-    if (height !== undefined && width !== undefined) {
-      this.height = height;
-      this.width = width;
-    } else {
-      this.adjustPosition();
+      this.update(person);
     }
   }
 
+  public setIsSelected(flag: boolean) {
+    this.isSelected = flag;
+    this.update();
+  }
+
   public clone() {
-    const clone = new Person(
-      this.data,
-      this.showBywords,
-      this.showYears,
-      this.nameText,
-      this.bywordsText,
-      this.birthText,
-      this.deathText,
-      this.height,
-      this.width
-    );
+    const clone = new Person(this);
     return clone;
   }
 
   private adjustPositionVertically() {
-    const spacing = FamilyTree.NORMAL_FONT.size / 4;
+    const nameFont = this.isSelected
+      ? FamilyTree.setting.selectedNameFont
+      : FamilyTree.setting.nameFont;
+
+    const spacing = nameFont.size / 4;
 
     let heightOfUpper = this.nameText.getHeight();
     let widthOfUpper = this.nameText.getWidth();
     this.nameText.setRelativeUL({ x: 0, y: 0 });
 
-    if (this.bywordsText !== undefined && this.showBywords) {
+    if (this.bywordsText !== undefined && FamilyTree.setting.showBywords) {
       this.bywordsText.setRelativeUL({
         x: this.nameText.getWidth() + spacing,
         y: 0,
@@ -275,7 +163,7 @@ export class Person {
 
     let widthOfLower = 0;
     let heightOfLower = 0;
-    if (this.showYears) {
+    if (FamilyTree.setting.showYears) {
       if (this.birthText !== undefined && this.deathText !== undefined) {
         this.birthText.setRelativeUL({ x: 0, y: 0 });
         heightOfLower = this.birthText.getHeight();
@@ -302,21 +190,21 @@ export class Person {
       this.height += spacing + heightOfLower;
       const diffWidth = widthOfUpper - widthOfLower;
       if (diffWidth > 0) {
-        if (this.birthText !== undefined && this.showYears) {
+        if (this.birthText !== undefined && FamilyTree.setting.showYears) {
           this.birthText.translate(diffWidth / 2, heightOfUpper + spacing);
         }
-        if (this.deathText !== undefined && this.showYears) {
+        if (this.deathText !== undefined && FamilyTree.setting.showYears) {
           this.deathText.translate(diffWidth / 2, heightOfUpper + spacing);
         }
       } else {
         this.nameText.translate(-diffWidth / 2, 0);
-        if (this.bywordsText !== undefined && this.showBywords) {
+        if (this.bywordsText !== undefined && FamilyTree.setting.showBywords) {
           this.bywordsText.translate(-diffWidth / 2, 0);
         }
-        if (this.birthText !== undefined && this.showYears) {
+        if (this.birthText !== undefined && FamilyTree.setting.showYears) {
           this.birthText.translate(0, heightOfUpper + spacing);
         }
-        if (this.deathText !== undefined && this.showYears) {
+        if (this.deathText !== undefined && FamilyTree.setting.showYears) {
           this.deathText.translate(0, heightOfUpper + spacing);
         }
       }
@@ -327,18 +215,22 @@ export class Person {
     this.width = this.nameText.getWidth();
     this.height = this.nameText.getHeight();
 
-    const spacing = FamilyTree.NORMAL_FONT.size / 4;
+    const nameFont = this.isSelected
+      ? FamilyTree.setting.selectedNameFont
+      : FamilyTree.setting.nameFont;
+
+    const spacing = nameFont.size / 4;
 
     this.nameText.setRelativeUL({ x: 0, y: 0 });
 
-    if (this.bywordsText !== undefined && this.showBywords) {
+    if (this.bywordsText !== undefined && FamilyTree.setting.showBywords) {
       this.bywordsText.setRelativeUL({ x: 0, y: 0 });
       this.nameText.translate(0, this.bywordsText.getHeight() + spacing);
       this.height += spacing + this.bywordsText.getHeight();
       this.width = Math.max(this.width, this.bywordsText.getWidth());
     }
 
-    if (this.birthText !== undefined && this.showYears) {
+    if (this.birthText !== undefined && FamilyTree.setting.showYears) {
       this.birthText.setRelativeUL({ x: 0, y: 0 });
       this.birthText.translate(0, this.height + spacing);
       const diffWidth = this.width - this.birthText.getWidth();
@@ -346,7 +238,7 @@ export class Person {
         this.birthText.translate(diffWidth, 0);
       } else {
         this.nameText.translate(-diffWidth, 0);
-        if (this.bywordsText !== undefined && this.showBywords) {
+        if (this.bywordsText !== undefined && FamilyTree.setting.showBywords) {
           this.bywordsText.translate(-diffWidth, 0);
         }
       }
@@ -355,31 +247,31 @@ export class Person {
   }
 
   private adjustPosition() {
-    if (this.isVertical) {
+    if (FamilyTree.setting.isVertical) {
       this.adjustPositionVertically();
     } else {
       this.adjustPositionHorizontally();
     }
   }
 
-  setShowBywords(flag: boolean) {
-    if (this.showBywords === flag) return;
-    this.showBywords = flag;
-    this.adjustPosition();
-  }
+  // setShowBywords(flag: boolean) {
+  //   if (FamilyTree.setting.showBywords === flag) return;
+  //   FamilyTree.setting.showBywords = flag;
+  //   this.adjustPosition();
+  // }
 
-  setShowYears(flag: boolean) {
-    if (this.showYears === flag) return;
-    this.showYears = flag;
-    this.adjustPosition();
-  }
+  // setShowYears(flag: boolean) {
+  //   if (FamilyTree.setting.showYears === flag) return;
+  //   FamilyTree.setting.showYears = flag;
+  //   this.adjustPosition();
+  // }
 
-  setIsVertical(flag: boolean) {
-    if (this.isVertical === flag) return;
-    this.isVertical = flag;
-    this.update(this.data);
-    this.adjustPosition();
-  }
+  // setIsVertical(flag: boolean) {
+  //   if (FamilyTree.setting.isVertical === flag) return;
+  //   FamilyTree.setting.isVertical = flag;
+  //   this.update(this.data);
+  //   this.adjustPosition();
+  // }
 
   public getNameTextInfo(): TextInformation {
     return this.nameText;
@@ -401,101 +293,90 @@ export class Person {
     return this.data;
   }
 
-  public update(data: PersonData) {
-    this.data = data;
-    if (this.isVertical) {
+  public update(): void;
+  public update(data: PersonData): void;
+  public update(data?: PersonData): void {
+    if (data !== undefined) {
+      this.data = personDataClone(data);
+    }
+    const color = getNameColor(this.data.sex);
+    const nameFont = this.isSelected
+      ? FamilyTree.setting.selectedNameFont
+      : FamilyTree.setting.nameFont;
+    if (FamilyTree.setting.isVertical) {
       this.nameText = new VerticalTextInformation(
         displayName(this.data.name),
-        this.nameText.getFont(),
-        this.nameText.getColor()
+        nameFont,
+        color
       );
     } else {
       this.nameText = new HorizontalTextInformation(
         displayName(this.data.name),
-        this.nameText.getFont(),
-        this.nameText.getColor()
+        nameFont,
+        color
       );
     }
-    if (this.data.bywords !== "") {
-      if (this.isVertical) {
+    if (this.data.bywords !== "" && FamilyTree.setting.showBywords) {
+      if (FamilyTree.setting.isVertical) {
         this.bywordsText = new VerticalTextInformation(
           this.data.bywords,
-          FamilyTree.BYWORDS_FONT,
+          FamilyTree.setting.bywordsFont,
           "rgb(0, 0, 0)"
         );
       } else {
         this.bywordsText = new HorizontalTextInformation(
           this.data.bywords,
-          FamilyTree.BYWORDS_FONT,
+          FamilyTree.setting.bywordsFont,
           "rgb(0, 0, 0)"
         );
       }
-    } else {
-      this.bywordsText = undefined;
     }
-    if (this.isVertical) {
-      if (this.data.birthday?.year !== undefined) {
-        const prefix = this.data.birthday.isBC ? "前" : "";
-        this.birthText = new HorizontalTextInformation(
-          `${prefix}${this.data.birthday?.year}年 生`,
-          FamilyTree.YEAR_FONT,
-          "rgb(0, 0, 0)"
-        );
-      } else {
-        this.birthText = undefined;
-      }
-      if (this.data.deathday?.year !== undefined) {
-        const prefix = this.data.deathday.isBC ? "前" : "";
-        this.deathText = new HorizontalTextInformation(
-          `${prefix}${this.data.deathday?.year}年 没`,
-          FamilyTree.YEAR_FONT,
-          "rgb(0, 0, 0)"
-        );
-      } else {
-        this.deathText = undefined;
-      }
-    } else {
-      if (
-        this.data.birthday?.year !== undefined ||
-        this.data.deathday?.year !== undefined
-      ) {
-        const birthPrefix =
-          this.data.birthday?.isBC === undefined ||
-          this.data.birthday.isBC === false
-            ? ""
-            : "BC";
-        const deathPrefix =
-          this.data.deathday?.isBC === undefined ||
-          this.data.deathday.isBC === false
-            ? ""
-            : "BC";
-        const birth = birthPrefix + (this.data.birthday?.year ?? "?");
-        const death = deathPrefix + (this.data.deathday?.year ?? "?");
-        this.birthText = new HorizontalTextInformation(
-          `${birth} ~ ${death}`,
-          FamilyTree.YEAR_FONT,
-          "rgb(0, 0, 0)"
-        );
-        this.deathText = undefined;
-      } else {
-        this.birthText = undefined;
-        this.deathText = undefined;
-      }
+    if (
+      this.data.birthday?.year !== undefined &&
+      FamilyTree.setting.isVertical
+    ) {
+      const prefix = this.data.birthday.isBC ? "前" : "";
+      this.birthText = new HorizontalTextInformation(
+        `${prefix}${this.data.birthday?.year}年 生`,
+        FamilyTree.setting.yearFont,
+        "rgb(0, 0, 0)"
+      );
+    }
+    if (
+      this.data.deathday?.year !== undefined &&
+      FamilyTree.setting.isVertical
+    ) {
+      const prefix = this.data.deathday.isBC ? "前" : "";
+      this.deathText = new HorizontalTextInformation(
+        `${prefix}${this.data.deathday?.year}年 没`,
+        FamilyTree.setting.yearFont,
+        "rgb(0, 0, 0)"
+      );
+    }
+    if (
+      (this.data.birthday?.year !== undefined ||
+        this.data.deathday?.year !== undefined) &&
+      FamilyTree.setting.isVertical === false
+    ) {
+      const birthPrefix =
+        this.data.birthday?.isBC === undefined ||
+        this.data.birthday.isBC === false
+          ? ""
+          : "BC";
+      const deathPrefix =
+        this.data.deathday?.isBC === undefined ||
+        this.data.deathday.isBC === false
+          ? ""
+          : "BC";
+      const birth = birthPrefix + (this.data.birthday?.year ?? "?");
+      const death = deathPrefix + (this.data.deathday?.year ?? "?");
+      this.birthText = new HorizontalTextInformation(
+        `${birth} ~ ${death}`,
+        FamilyTree.setting.yearFont,
+        "rgb(0, 0, 0)"
+      );
     }
     this.adjustPosition();
-  }
-
-  public changeFont(font: FontData) {
-    this.nameText.setFont(font);
-    this.adjustPosition();
-  }
-
-  public changeColor(color?: string) {
-    if (color === undefined) {
-      this.nameText.setColor(getNameColor(this.data.sex));
-    } else {
-      this.nameText.setColor(color);
-    }
   }
 
   public getColor() {
@@ -665,7 +546,7 @@ export class Person {
     offsetTagId: number
   ) {
     this.data.position.x += offsetPosition.x;
-    if (this.isFixedVertically === false) {
+    if (this.data.isFixedVertically === false) {
       this.data.position.y += offsetPosition.y;
     }
     this.data.id += offsetPersonId;
@@ -710,7 +591,6 @@ export class Person {
     ) {
       personData.deathday = undefined;
     }
-
     personData.aliases = personData.aliases.filter((alias) => alias !== "");
     personData.works = personData.works.filter((work) => work !== "");
     personData.words = personData.words.filter((word) => word !== "");
@@ -718,22 +598,26 @@ export class Person {
 
   draw(ctx: CanvasRenderingContext2D) {
     this.nameText.draw(ctx, this.data.position);
-    if (this.bywordsText !== undefined && this.showBywords) {
+    if (this.bywordsText !== undefined && FamilyTree.setting.showBywords) {
       this.bywordsText.draw(ctx, this.data.position);
     }
-    if (this.birthText !== undefined && this.showYears) {
+    if (this.birthText !== undefined && FamilyTree.setting.showYears) {
       this.birthText.draw(ctx, this.data.position);
     }
-    if (this.deathText !== undefined && this.showYears) {
+    if (
+      this.deathText !== undefined &&
+      FamilyTree.setting.showYears &&
+      FamilyTree.setting.isVertical
+    ) {
       this.deathText.draw(ctx, this.data.position);
     }
   }
 
   setIsFixedVertically(isFixed: boolean) {
-    this.isFixedVertically = isFixed;
+    this.data.isFixedVertically = isFixed;
   }
 
   getIsFixedVertically() {
-    return this.isFixedVertically;
+    return this.data.isFixedVertically;
   }
 }

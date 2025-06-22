@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from "react";
-import { FamilyTree } from "../../model/FamilyTree";
+import { FamilyTree, FamilyTreeSetting } from "../../model/FamilyTree";
 import { drawFamilyTree } from "./DrawFamilyTree";
 import { type Position } from "../../model/FundamentalData";
 import {
@@ -96,17 +96,19 @@ const Title: React.FC<TitleProps> = ({ margin, title, setTitle }) => {
 
 const App: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [familyTree] = useState<FamilyTree>(new FamilyTree([], [], []));
+  const [familyTree] = useState<FamilyTree>(
+    new FamilyTree([], [], [], FamilyTree.setting)
+  );
   const [title, setTitle] = useState<string>("家系図");
 
   const undoRedoListRef = useRef<UndoRedoList<FamilyTree>>(
     new UndoRedoList<FamilyTree>(
       100,
       () => {
-        return new FamilyTree([], [], []);
+        return new FamilyTree([], [], [], FamilyTree.setting);
       },
       (oldState: FamilyTree, newState: FamilyTree) => {
-        oldState.load(newState);
+        oldState.load(newState, FamilyTree.setting);
       }
     )
   );
@@ -170,17 +172,7 @@ const App: React.FC = () => {
         familyTree.findPersonById(personData.id) === undefined
       ) {
         personData.id = familyTree.getNextPersonId();
-        familyTree
-          .getPersonMap()
-          .set(
-            personData.id,
-            new Person(
-              personData,
-              familyTree.getShowBywords(),
-              familyTree.getShowYears(),
-              familyTree.getIsVertical()
-            )
-          );
+        familyTree.getPersonMap().set(personData.id, new Person(personData));
         familyTree.nextPersonIdCountUp();
       } else {
         const targetPerson = familyTree.findPersonById(personData.id);
@@ -197,7 +189,7 @@ const App: React.FC = () => {
     window.electronAPI?.onUndo(() => {
       if (undoRedoListRef.current.canUndo()) {
         const undoData = undoRedoListRef.current.getUndoState();
-        familyTree.load(undoData);
+        familyTree.load(undoData, FamilyTree.setting);
         setTitle(familyTree.getTitle());
         forceUpdate();
       }
@@ -205,7 +197,7 @@ const App: React.FC = () => {
     window.electronAPI?.onRedo(() => {
       if (undoRedoListRef.current.canRedo()) {
         const redoData = undoRedoListRef.current.getRedoState();
-        familyTree.load(redoData);
+        familyTree.load(redoData, FamilyTree.setting);
         setTitle(familyTree.getTitle());
         forceUpdate();
       }
@@ -240,6 +232,13 @@ const App: React.FC = () => {
     window.electronAPI?.onIsVertical((flag) => {
       familyTree.setIsVertical(flag);
       save();
+      forceUpdate();
+    });
+    window.electronAPI?.onOpenSettingEditor(() => {
+      window.electronAPI?.openSettingEditor();
+    });
+    window.electronAPI?.onSendSettingToMain((setting) => {
+      familyTree.setFamilyTreeSetting(setting);
       forceUpdate();
     });
   }, []);
@@ -309,8 +308,14 @@ const App: React.FC = () => {
     const personData: PersonData[] = data.personData;
     const marriageData: MarriageData[] = data.marriageData;
     const spotData: SpotData[] = data.spotData;
+    const setting: FamilyTreeSetting = data.familyTreeSetting;
 
-    const newFamilyTree = new FamilyTree(personData, marriageData, spotData);
+    const newFamilyTree = new FamilyTree(
+      personData,
+      marriageData,
+      spotData,
+      setting
+    );
 
     const canvasCenter: Position = {
       x: (canvasRef.current?.width ?? 0) / 2,
@@ -318,7 +323,7 @@ const App: React.FC = () => {
     };
     if (isLoadData) {
       setTitle(newTitle);
-      familyTree.load(newFamilyTree);
+      familyTree.load(newFamilyTree, setting);
       familyTree.setTitle(newTitle);
       const center: Position = {
         x: (familyTree.getRightX() + familyTree.getLeftX()) / 2,
@@ -461,7 +466,7 @@ const App: React.FC = () => {
     } else {
       movingPerson.current = familyTree.getSelectedPerson(unscaledMousePos);
       if (movingPerson.current !== undefined) {
-        movingPerson.current.changeFont(FamilyTree.BOLD_FONT);
+        movingPerson.current.setIsSelected(true);
         if (moveWithDesents) {
           movingDesentsRef.current = familyTree.getAllDescents(
             movingPerson.current
@@ -525,7 +530,7 @@ const App: React.FC = () => {
   const handleMouseUp = (e: React.MouseEvent) => {
     if (e.button !== 0) return;
     if (movingPerson.current !== undefined) {
-      movingPerson.current.changeFont(FamilyTree.NORMAL_FONT);
+      movingPerson.current.setIsSelected(false);
       forceUpdate();
       save();
     }

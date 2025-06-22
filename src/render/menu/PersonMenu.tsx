@@ -242,8 +242,8 @@ const PersonMenu: React.FC<PersonMenuProps> = ({
         <SingleMenu
           text={
             selectedPerson.getIsFixedVertically()
-              ? "水平方向を固定    ✓"
-              : "水平方向を固定     "
+              ? "垂直方向を固定    ✓"
+              : "垂直方向を固定     "
           }
           id={2}
           onClick={() => {

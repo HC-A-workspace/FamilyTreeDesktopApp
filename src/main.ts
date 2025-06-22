@@ -2,6 +2,7 @@ import path from "node:path";
 import fs from "fs";
 import { BrowserWindow, Menu, app, dialog, ipcMain } from "electron";
 import { PersonData } from "./model/Person";
+import { FamilyTreeSetting } from "./model/FamilyTree";
 
 app.whenReady().then(() => {
   const mainWindow = new BrowserWindow({
@@ -10,7 +11,7 @@ app.whenReady().then(() => {
     },
   });
 
-  mainWindow.webContents.openDevTools();
+  // mainWindow.webContents.openDevTools();
 
   const menu = Menu.buildFromTemplate([
     {
@@ -155,6 +156,12 @@ app.whenReady().then(() => {
             mainWindow.webContents.send("is-vertical", e.checked);
           },
         },
+        {
+          label: "設定",
+          click: () => {
+            mainWindow.webContents.send("open-setting-editor");
+          },
+        },
       ],
     },
   ]);
@@ -173,7 +180,7 @@ app.whenReady().then(() => {
     });
     // editorWindow.webContents.openDevTools();
     editorWindow.loadFile(path.join(__dirname, "../dist/index.html"), {
-      hash: `/editor`,
+      hash: "/editor",
     });
     editorWindow.webContents.once("did-finish-load", () => {
       editorWindow.webContents.send("load-person-on-editor", personData);
@@ -183,6 +190,27 @@ app.whenReady().then(() => {
 
   ipcMain.on("send-persondata-from-editor", (_, personData: PersonData) => {
     mainWindow.webContents.send("send-persondata-to-main", personData);
+  });
+
+  ipcMain.handle("close-editor", (e) => {
+    const win = BrowserWindow.fromWebContents(e.sender);
+    if (win) win.close();
+  });
+  ipcMain.handle("open-settingEditor", (_) => {
+    const settingEditorWindow = new BrowserWindow({
+      webPreferences: {
+        preload: path.join(__dirname, "preload.js"),
+      },
+      width: 330,
+      height: 450,
+    });
+    settingEditorWindow.loadFile(path.join(__dirname, "../dist/index.html"), {
+      hash: "/settingEditor",
+    });
+    settingEditorWindow.setMenu(null);
+  });
+  ipcMain.on("send-setting-from-editor", (_, setting: FamilyTreeSetting) => {
+    mainWindow.webContents.send("send-setting-to-main", setting);
   });
 
   ipcMain.handle("close-editor", (e) => {

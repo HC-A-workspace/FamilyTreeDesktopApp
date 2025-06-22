@@ -1,5 +1,6 @@
 import { contextBridge, ipcRenderer } from "electron";
-import { PersonData } from "./model/Person";
+import { getEmptyPersonData, PersonData } from "./model/Person";
+import { FamilyTreeSetting } from "./model/FamilyTree";
 
 console.log("preloaded!");
 
@@ -47,4 +48,12 @@ contextBridge.exposeInMainWorld("electronAPI", {
     ipcRenderer.on("show-years", (_, flag) => callback(flag)),
   onIsVertical: (callback: (isVertical: boolean) => void) =>
     ipcRenderer.on("is-vertical", (_, flag) => callback(flag)),
+  onOpenSettingEditor: (callback: () => void) => {
+    ipcRenderer.on("open-setting-editor", callback);
+  },
+  openSettingEditor: () => ipcRenderer.invoke("open-settingEditor"),
+  onSendSettingFromSettingEditor: (setting: FamilyTreeSetting) =>
+    ipcRenderer.send("send-setting-from-editor", setting),
+  onSendSettingToMain: (callback: (setting: FamilyTreeSetting) => void) =>
+    ipcRenderer.on("send-setting-to-main", (_, setting) => callback(setting)),
 });

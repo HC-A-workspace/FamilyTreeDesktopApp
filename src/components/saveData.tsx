@@ -1,4 +1,4 @@
-import type { FamilyTree } from "../model/FamilyTree";
+import { FamilyTree } from "../model/FamilyTree";
 
 export function saveFamilyTree(familyTree: FamilyTree) {
   if (familyTree.getTitle() === "") return;
@@ -9,6 +9,7 @@ export function saveFamilyTree(familyTree: FamilyTree) {
     personData: familyTree.getPersonData(),
     marriageData: familyTree.getMarriageData(),
     spotData: familyTree.getSpotData(),
+    familyTreeSetting: FamilyTree.setting,
   };
 
   const blob = new Blob([JSON.stringify(data, null, 2)], {

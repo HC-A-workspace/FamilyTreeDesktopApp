@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { FamilyTree, FamilyTreeSetting } from "../../model/FamilyTree";
+import { useEffect, useState } from "react";
+import { FamilyTreeSetting } from "../../model/FamilyTree";
 
 type BooleanSettingKey = Extract<
   keyof FamilyTreeSetting,
@@ -15,13 +15,21 @@ const booleanSettingLabels: { key: BooleanSettingKey; label: string }[] = [
 ];
 
 const SettingEditor: React.FC = () => {
-  const [setting, setSetting] = useState({
-    ...FamilyTree.setting,
-    nameFont: { ...FamilyTree.setting.nameFont },
-    selectedNameFont: { ...FamilyTree.setting.selectedNameFont },
-    bywordsFont: { ...FamilyTree.setting.bywordsFont },
-    yearFont: { ...FamilyTree.setting.yearFont },
-  });
+  const [setting, setSetting] = useState<FamilyTreeSetting | undefined>(
+    undefined
+  );
+
+  useEffect(() => {
+    window.electronAPI?.onSendSettingToSettingEditor((setting) => {
+      setSetting({
+        ...setting,
+        nameFont: { ...setting.nameFont },
+        selectedNameFont: { ...setting.selectedNameFont },
+        bywordsFont: { ...setting.bywordsFont },
+        yearFont: { ...setting.yearFont },
+      });
+    });
+  }, []);
 
   const checkboxStyle = {
     marginBottom: "8px",
@@ -54,96 +62,100 @@ const SettingEditor: React.FC = () => {
         background: "#fff",
       }}
     >
-      <h3 style={{ textAlign: "center", marginBottom: 20 }}>設定</h3>
+      {setting !== undefined && (
+        <div>
+          <h3 style={{ textAlign: "center", marginBottom: 20 }}>設定</h3>
 
-      {booleanSettingLabels.map(({ key, label }) => (
-        <div style={checkboxStyle} key={key}>
-          <input
-            type="checkbox"
-            checked={setting[key]}
-            onChange={(e) =>
-              setSetting({ ...setting, [key]: e.target.checked })
-            }
-          />
-          <span>{label}</span>
+          {booleanSettingLabels.map(({ key, label }) => (
+            <div style={checkboxStyle} key={key}>
+              <input
+                type="checkbox"
+                checked={setting[key]}
+                onChange={(e) =>
+                  setSetting({ ...setting, [key]: e.target.checked })
+                }
+              />
+              <span>{label}</span>
+            </div>
+          ))}
+
+          <div style={sectionStyle}>
+            <label>名前のフォントサイズ</label>
+            <input
+              type="number"
+              value={setting.nameFont.size}
+              min={1}
+              style={numberInputStyle}
+              onChange={(e) => {
+                const size = Number(e.target.value);
+                setSetting({
+                  ...setting,
+                  nameFont: { ...setting.nameFont, size },
+                  selectedNameFont: { ...setting.selectedNameFont, size },
+                });
+              }}
+            />
+          </div>
+
+          <div style={sectionStyle}>
+            <label>称号のフォントサイズ</label>
+            <input
+              type="number"
+              value={setting.bywordsFont.size}
+              min={1}
+              style={numberInputStyle}
+              onChange={(e) => {
+                setSetting({
+                  ...setting,
+                  bywordsFont: {
+                    ...setting.bywordsFont,
+                    size: Number(e.target.value),
+                  },
+                });
+              }}
+            />
+          </div>
+
+          <div style={sectionStyle}>
+            <label>生没年のフォントサイズ</label>
+            <input
+              type="number"
+              value={setting.yearFont.size}
+              min={1}
+              style={numberInputStyle}
+              onChange={(e) => {
+                setSetting({
+                  ...setting,
+                  yearFont: {
+                    ...setting.yearFont,
+                    size: Number(e.target.value),
+                  },
+                });
+              }}
+            />
+          </div>
+
+          <button
+            style={{
+              marginTop: 20,
+              width: "100%",
+              padding: "10px 0",
+              backgroundColor: "#007bff",
+              color: "white",
+              fontWeight: "bold",
+              border: "none",
+              borderRadius: 6,
+              cursor: "pointer",
+            }}
+            onClick={() => {
+              window.electronAPI?.onSendSettingFromSettingEditor(setting);
+              window.electronAPI?.onEditorClose();
+            }}
+          >
+            適応して閉じる
+          </button>
         </div>
-      ))}
-
-      <div style={sectionStyle}>
-        <label>名前のフォントサイズ</label>
-        <input
-          type="number"
-          value={setting.nameFont.size}
-          min={1}
-          style={numberInputStyle}
-          onChange={(e) => {
-            const size = Number(e.target.value);
-            setSetting({
-              ...setting,
-              nameFont: { ...setting.nameFont, size },
-              selectedNameFont: { ...setting.selectedNameFont, size },
-            });
-          }}
-        />
-      </div>
-
-      <div style={sectionStyle}>
-        <label>称号のフォントサイズ</label>
-        <input
-          type="number"
-          value={setting.bywordsFont.size}
-          min={1}
-          style={numberInputStyle}
-          onChange={(e) => {
-            setSetting({
-              ...setting,
-              bywordsFont: {
-                ...setting.bywordsFont,
-                size: Number(e.target.value),
-              },
-            });
-          }}
-        />
-      </div>
-
-      <div style={sectionStyle}>
-        <label>生没年のフォントサイズ</label>
-        <input
-          type="number"
-          value={setting.yearFont.size}
-          min={1}
-          style={numberInputStyle}
-          onChange={(e) => {
-            setSetting({
-              ...setting,
-              yearFont: {
-                ...setting.yearFont,
-                size: Number(e.target.value),
-              },
-            });
-          }}
-        />
-      </div>
-
-      <button
-        style={{
-          marginTop: 20,
-          width: "100%",
-          padding: "10px 0",
-          backgroundColor: "#007bff",
-          color: "white",
-          fontWeight: "bold",
-          border: "none",
-          borderRadius: 6,
-          cursor: "pointer",
-        }}
-        onClick={() => {
-          window.electronAPI?.onSendSettingFromSettingEditor(setting);
-          window.electronAPI?.onEditorClose();
-        }}
-      >
-        適応して閉じる
-      </button>
+      )}
     </div>
   );
 };

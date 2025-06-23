@@ -235,7 +235,7 @@ const App: React.FC = () => {
       forceUpdate();
     });
     window.electronAPI?.onOpenSettingEditor(() => {
-      window.electronAPI?.openSettingEditor();
+      window.electronAPI?.openSettingEditor(FamilyTree.setting);
     });
     window.electronAPI?.onSendSettingToMain((setting) => {
       familyTree.setFamilyTreeSetting(setting);

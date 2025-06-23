@@ -196,7 +196,7 @@ app.whenReady().then(() => {
     const win = BrowserWindow.fromWebContents(e.sender);
     if (win) win.close();
   });
-  ipcMain.handle("open-settingEditor", (_) => {
+  ipcMain.handle("open-settingEditor", (_, setting) => {
     const settingEditorWindow = new BrowserWindow({
       webPreferences: {
         preload: path.join(__dirname, "preload.js"),
@@ -208,7 +208,15 @@ app.whenReady().then(() => {
       hash: "/settingEditor",
     });
     settingEditorWindow.setMenu(null);
+    settingEditorWindow.webContents.once("did-finish-load", () => {
+      settingEditorWindow.webContents.send(
+        "send-setting-to-setting-editor",
+        setting
+      );
+    });
+    // settingEditorWindow.webContents.openDevTools();
   });
+
   ipcMain.on("send-setting-from-editor", (_, setting: FamilyTreeSetting) => {
     mainWindow.webContents.send("send-setting-to-main", setting);
   });

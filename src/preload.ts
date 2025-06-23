@@ -51,9 +51,16 @@ contextBridge.exposeInMainWorld("electronAPI", {
   onOpenSettingEditor: (callback: () => void) => {
     ipcRenderer.on("open-setting-editor", callback);
   },
-  openSettingEditor: () => ipcRenderer.invoke("open-settingEditor"),
+  openSettingEditor: (setting: FamilyTreeSetting) =>
+    ipcRenderer.invoke("open-settingEditor", setting),
   onSendSettingFromSettingEditor: (setting: FamilyTreeSetting) =>
     ipcRenderer.send("send-setting-from-editor", setting),
   onSendSettingToMain: (callback: (setting: FamilyTreeSetting) => void) =>
     ipcRenderer.on("send-setting-to-main", (_, setting) => callback(setting)),
+  onSendSettingToSettingEditor: (
+    callback: (setting: FamilyTreeSetting) => void
+  ) =>
+    ipcRenderer.on("send-setting-to-setting-editor", (_, setting) =>
+      callback(setting)
+    ),
 });

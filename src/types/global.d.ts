@@ -28,9 +28,12 @@ declare global {
       onShowYears: (callback: (isShowingYears: boolean) => void) => void;
       onIsVertical: (callback: (isVertical: boolean) => void) => void;
       onOpenSettingEditor: (callback: () => void) => void;
-      openSettingEditor: () => void;
+      openSettingEditor: (setting: FamilyTreeSetting) => void;
       onSendSettingFromSettingEditor: (setting: FamilyTreeSetting) => void;
       onSendSettingToMain: (
+        callback: (setting: FamilyTreeSetting) => void
+      ) => void;
+      onSendSettingToSettingEditor: (
         callback: (setting: FamilyTreeSetting) => void
       ) => void;
     };

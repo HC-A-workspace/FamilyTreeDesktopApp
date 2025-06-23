@@ -1,6 +1,6 @@
 {
   "name": "familytree-desktopapp",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "main": "dist/main.js",
   "build": {
     "appId": "familytree",
@@ -13,7 +13,8 @@
       "buildResources": "assets"
     },
     "win": {
-      "target": "nsis"
+      "target": "nsis",
+      "icon": "build/icon.ico"
     }
   },
   "scripts": {

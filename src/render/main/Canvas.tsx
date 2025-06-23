@@ -16,6 +16,7 @@ import { saveFamilyTree } from "../../components/saveData";
 import { Spot, SpotData } from "../../model/Spot";
 import SpotEditor from "../editor/SpotEditor";
 import SpotMenu from "../menu/SpotMenu";
+import "./Canvas.css";
 
 export const State = {
   Usual: 0,
@@ -133,6 +134,7 @@ const App: React.FC = () => {
   const [menuPosition, setMenuPosition] = useState<Position>({ x: 0, y: 0 });
 
   const [displayTicks, setDisplayTicks] = useState(true);
+  const [displayGrid, setDisplayGrid] = useState(true);
   const [moveWithDesents, setMoveWithDescents] = useState(false);
   const movingDesentsRef = useRef<Person[]>([]);
 
@@ -207,7 +209,7 @@ const App: React.FC = () => {
     });
     window.electronAPI?.onMoveWithDescents(setMoveWithDescents);
     window.electronAPI?.onShowGrid((flag) => {
-      setDisplayTicks(flag);
+      setDisplayGrid(flag);
       forceUpdate();
     });
     window.electronAPI?.onAllClear(() => {
@@ -221,23 +223,22 @@ const App: React.FC = () => {
     });
     window.electronAPI?.onShowBywords((flag) => {
       familyTree.setShowBywords(flag);
-      save();
       forceUpdate();
     });
     window.electronAPI?.onShowYears((flag) => {
       familyTree.setShowYears(flag);
-      save();
       forceUpdate();
     });
     window.electronAPI?.onIsVertical((flag) => {
       familyTree.setIsVertical(flag);
-      save();
       forceUpdate();
     });
     window.electronAPI?.onOpenSettingEditor(() => {
       window.electronAPI?.openSettingEditor(FamilyTree.setting);
     });
     window.electronAPI?.onSendSettingToMain((setting) => {
+      setDisplayGrid(setting.showGrid);
+      setDisplayTicks(setting.showSideYear);
       familyTree.setFamilyTreeSetting(setting);
       forceUpdate();
     });
@@ -274,13 +275,17 @@ const App: React.FC = () => {
         right: unscaledLowerRight.x,
       },
       scale,
-      displayTicks
+      displayGrid
     );
-    setTicks(
-      newTicks.map(({ height, text }) => {
-        return { height: height * scale + offset.y, text: text };
-      })
-    );
+    if (displayTicks) {
+      setTicks(
+        newTicks.map(({ height, text }) => {
+          return { height: height * scale + offset.y, text: text };
+        })
+      );
+    } else {
+      setTicks([]);
+    }
 
     ctx.restore();
   }, [
@@ -623,6 +628,72 @@ const App: React.FC = () => {
     setDisplaySpotEditor(true);
   };
 
+  const pressedKeyRef = useRef(new Set<string>([]));
+  const isShiftPressed = () => {
+    return (
+      pressedKeyRef.current.has("ShiftLeft") ||
+      pressedKeyRef.current.has("ShiftRight")
+    );
+  };
+  const isControlPressed = () => {
+    return (
+      pressedKeyRef.current.has("ControlLeft") ||
+      pressedKeyRef.current.has("ControlRight")
+    );
+  };
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    const keyCode = e.code;
+    const shift = 26;
+    const zoomFactor = 1.1;
+    const center: Position = {
+      x: canvasWidth() / 2,
+      y: canvasHeight() / 2,
+    };
+    pressedKeyRef.current.add(keyCode);
+    if (keyCode === "KeyW" || keyCode === "ArrowUp") {
+      setOffset({
+        x: offset.x,
+        y: offset.y + shift,
+      });
+    } else if (keyCode === "KeyA" || keyCode === "ArrowLeft") {
+      setOffset({
+        x: offset.x + shift,
+        y: offset.y,
+      });
+    } else if (keyCode === "KeyS" || keyCode === "ArrowDown") {
+      setOffset({
+        x: offset.x,
+        y: offset.y - shift,
+      });
+    } else if (keyCode === "KeyD" || keyCode === "ArrowRight") {
+      setOffset({
+        x: offset.x - shift,
+        y: offset.y,
+      });
+    } else if (
+      keyCode === "Semicolon" &&
+      isShiftPressed() &&
+      isControlPressed()
+    ) {
+      setScale((prev) => prev * zoomFactor);
+      setOffset((prev) => ({
+        x: center.x - (center.x - prev.x) * zoomFactor,
+        y: center.y - (center.y - prev.y) * zoomFactor,
+      }));
+    } else if (keyCode === "Minus" && isShiftPressed() && isControlPressed()) {
+      setScale((prev) => prev / zoomFactor);
+      setOffset((prev) => ({
+        x: center.x - (center.x - prev.x) / zoomFactor,
+        y: center.y - (center.y - prev.y) / zoomFactor,
+      }));
+    }
+  };
+
+  const handleKeyUp = (e: React.KeyboardEvent) => {
+    const keyCode = e.code;
+    pressedKeyRef.current.delete(keyCode);
+  };
+
   return (
     <div
       style={{
@@ -655,12 +726,16 @@ const App: React.FC = () => {
           left: margin,
           backgroundColor: "rgba(128, 253, 12, 0.27)",
         }}
+        className="canvas"
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
         onContextMenu={handleContextMenu}
         onWheel={handleWheel}
+        tabIndex={0}
+        onKeyDown={handleKeyDown}
+        onKeyUp={handleKeyUp}
       />
       {displayTicks && (
         <Ticks

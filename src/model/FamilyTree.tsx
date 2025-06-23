@@ -254,22 +254,22 @@ export class FamilyTree extends Setting {
 
   setShowBywords(showBywords: boolean) {
     if (FamilyTree.setting.showBywords !== showBywords) {
-      this.personStyleUpdate();
       FamilyTree.setting.showBywords = showBywords;
+      this.personStyleUpdate();
     }
   }
 
   setShowYears(showYears: boolean) {
     if (FamilyTree.setting.showYears !== showYears) {
-      this.personStyleUpdate();
       FamilyTree.setting.showYears = showYears;
+      this.personStyleUpdate();
     }
   }
 
   setIsVertical(isVertical: boolean) {
     if (FamilyTree.setting.isVertical !== isVertical) {
-      this.personStyleUpdate();
       FamilyTree.setting.isVertical = isVertical;
+      this.personStyleUpdate();
     }
   }
 

@@ -134,6 +134,7 @@ app.whenReady().then(() => {
           type: "checkbox",
           checked: true,
           accelerator: "Ctrl+B",
+
           click: (e) => {
             mainWindow.webContents.send("show-years", e.checked);
           },
@@ -158,6 +159,7 @@ app.whenReady().then(() => {
         },
         {
           label: "設定",
+          accelerator: "Ctrl+,",
           click: () => {
             mainWindow.webContents.send("open-setting-editor");
           },

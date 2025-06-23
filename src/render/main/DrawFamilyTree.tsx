@@ -1594,47 +1594,79 @@ function drawRuler(
   ctx: CanvasRenderingContext2D,
   rect: RectPosition,
   ticks: { height: number; text: string }[],
-  scale: number
+  scale: number,
+  displayTicks: boolean
 ) {
-  let tick = 1;
+  let majorTick = 1;
+  let minorTick = 1;
   const minSize = 80;
   const multi = 10;
   while (true) {
-    if (tick * multi * scale > minSize / 2.5) {
+    if (majorTick * multi * scale > minSize / 2.5) {
       break;
     }
-    tick *= 5;
-    if (tick * multi * scale > minSize) {
+    minorTick = majorTick;
+    majorTick *= 5;
+    if (majorTick * multi * scale > minSize) {
       break;
     }
-    tick *= 2;
+    minorTick = majorTick;
+    majorTick *= 2;
   }
-  const baseGrid = tick * multi;
-  const left = Math.ceil(rect.left / baseGrid);
-  const right = Math.floor(rect.right / baseGrid);
-  const top = Math.ceil(rect.top / baseGrid);
-  const bottom = Math.floor(rect.bottom / baseGrid);
 
-  ctx.setLineDash([10 / scale, 5 / scale]);
-  ctx.strokeStyle = "rgb(187, 187, 187)";
+  const minorGrid = minorTick * multi;
+  const minorLeft = Math.ceil(rect.left / minorGrid);
+  const minorRight = Math.floor(rect.right / minorGrid);
+  const minorTop = Math.ceil(rect.top / minorGrid);
+  const minorBottom = Math.floor(rect.bottom / minorGrid);
+
   ctx.lineWidth = 1 / scale;
-
-  for (let i = left; i <= right; i++) {
-    ctx.beginPath();
-    ctx.moveTo(i * baseGrid, rect.top);
-    ctx.lineTo(i * baseGrid, rect.bottom);
-    ctx.stroke();
+  if (displayTicks) {
+    for (let i = minorLeft; i <= minorRight; i++) {
+      if ((i * minorTick) % majorTick === 0) {
+        ctx.strokeStyle = "rgb(187, 187, 187)";
+        ctx.setLineDash([10 / scale, 5 / scale]);
+        ctx.beginPath();
+        ctx.moveTo(i * minorGrid, rect.top);
+        ctx.lineTo(i * minorGrid, rect.bottom);
+        ctx.stroke();
+      } else {
+        ctx.strokeStyle = "rgba(187, 187, 187, 0.4)";
+        ctx.setLineDash([3 / scale, 3 / scale]);
+        ctx.beginPath();
+        ctx.moveTo(i * minorGrid, rect.top);
+        ctx.lineTo(i * minorGrid, rect.bottom);
+        ctx.stroke();
+      }
+    }
   }
-
-  for (let i = top; i <= bottom; i++) {
-    ctx.beginPath();
-    ctx.moveTo(rect.left, i * baseGrid);
-    ctx.lineTo(rect.right, i * baseGrid);
-    ctx.stroke();
-    if (i > 0) {
-      ticks.push({ height: i * baseGrid, text: `${i * tick}年` });
+  for (let i = minorTop; i <= minorBottom; i++) {
+    if ((i * minorTick) % majorTick === 0) {
+      if (displayTicks) {
+        ctx.strokeStyle = "rgb(187, 187, 187)";
+        ctx.setLineDash([10 / scale, 5 / scale]);
+        ctx.beginPath();
+        ctx.moveTo(rect.left, i * minorGrid);
+        ctx.lineTo(rect.right, i * minorGrid);
+        ctx.stroke();
+      }
+      if (i > 0) {
+        ticks.push({ height: i * minorGrid, text: `${i * majorTick}年` });
+      } else {
+        ticks.push({
+          height: i * minorGrid,
+          text: `前${-i * majorTick + 1}年`,
+        });
+      }
     } else {
-      ticks.push({ height: i * baseGrid, text: `前${-i * tick + 1}年` });
+      if (displayTicks) {
+        ctx.strokeStyle = "rgba(187, 187, 187, 0.4)";
+        ctx.setLineDash([3 / scale, 3 / scale]);
+        ctx.beginPath();
+        ctx.moveTo(rect.left, i * minorGrid);
+        ctx.lineTo(rect.right, i * minorGrid);
+        ctx.stroke();
+      }
     }
   }
 
@@ -1659,9 +1691,7 @@ export function drawFamilyTree(
   displayTicks: boolean
 ) {
   const ticks: { height: number; text: string }[] = [];
-  if (displayTicks) {
-    drawRuler(ctx, rectPosition, ticks, scale);
-  }
+  drawRuler(ctx, rectPosition, ticks, scale, displayTicks);
   drawLines(ctx, familyTree);
   drawNames(ctx, familyTree.getPersonMap(), rectPosition);
   drawSpots(ctx, familyTree.getSpots(), scale);

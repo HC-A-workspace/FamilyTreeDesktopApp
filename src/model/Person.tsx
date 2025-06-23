@@ -6,7 +6,6 @@ import {
 import { FamilyTree } from "./FamilyTree";
 import {
   emptyStringToUndefined,
-  FontData,
   Sex,
   type Date,
   type Name,
@@ -254,25 +253,6 @@ export class Person {
     }
   }
 
-  // setShowBywords(flag: boolean) {
-  //   if (FamilyTree.setting.showBywords === flag) return;
-  //   FamilyTree.setting.showBywords = flag;
-  //   this.adjustPosition();
-  // }
-
-  // setShowYears(flag: boolean) {
-  //   if (FamilyTree.setting.showYears === flag) return;
-  //   FamilyTree.setting.showYears = flag;
-  //   this.adjustPosition();
-  // }
-
-  // setIsVertical(flag: boolean) {
-  //   if (FamilyTree.setting.isVertical === flag) return;
-  //   FamilyTree.setting.isVertical = flag;
-  //   this.update(this.data);
-  //   this.adjustPosition();
-  // }
-
   public getNameTextInfo(): TextInformation {
     return this.nameText;
   }
@@ -330,6 +310,8 @@ export class Person {
           "rgb(0, 0, 0)"
         );
       }
+    } else {
+      this.bywordsText = undefined;
     }
     if (
       this.data.birthday?.year !== undefined &&
@@ -341,6 +323,8 @@ export class Person {
         FamilyTree.setting.yearFont,
         "rgb(0, 0, 0)"
       );
+    } else {
+      this.birthText = undefined;
     }
     if (
       this.data.deathday?.year !== undefined &&
@@ -352,6 +336,8 @@ export class Person {
         FamilyTree.setting.yearFont,
         "rgb(0, 0, 0)"
       );
+    } else {
+      this.deathText = undefined;
     }
     if (
       (this.data.birthday?.year !== undefined ||

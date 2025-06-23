@@ -76,7 +76,7 @@ const Title: React.FC<TitleProps> = ({ margin, title, setTitle }) => {
       type="text"
       style={{
         position: "absolute",
-        top: margin,
+        // top: margin,
         left: "30%",
         right: "30%",
         font: "MS PGothic",
@@ -144,12 +144,12 @@ const App: React.FC = () => {
 
   const canvasWidth = () => {
     return displayTicks
-      ? windowWidth - 2 * margin - tickWidth
+      ? windowWidth - margin - tickWidth
       : windowWidth - 2 * margin;
   };
 
   const canvasHeight = () => {
-    return windowHeight - 3 * margin;
+    return windowHeight - 2 * margin;
   };
 
   const selectedPerson = useRef<Person | undefined>(undefined);
@@ -719,12 +719,13 @@ const App: React.FC = () => {
         width={canvasWidth()}
         height={canvasHeight()}
         style={{
-          border: "1px solid black",
+          border: "2px solid rgb(67, 139, 0)",
           zIndex: 0,
           position: "absolute",
-          top: 2 * margin,
+          top: margin,
           left: margin,
-          backgroundColor: "rgba(128, 253, 12, 0.27)",
+          // backgroundColor: "rgba(128, 253, 12, 0.27)",
+          backgroundColor: "rgb(255, 255, 255)",
         }}
         className="canvas"
         onMouseDown={handleMouseDown}
@@ -739,8 +740,8 @@ const App: React.FC = () => {
       />
       {displayTicks && (
         <Ticks
-          top={2 * margin}
-          left={margin + canvasWidth() + 2}
+          top={margin}
+          left={margin + canvasWidth()}
           width={tickWidth}
           height={canvasHeight()}
           ticks={ticks}

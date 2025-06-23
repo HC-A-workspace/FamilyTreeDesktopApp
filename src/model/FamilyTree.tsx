@@ -21,7 +21,6 @@ export interface FamilyTreeSetting {
   showYears: boolean;
   showGrid: boolean;
   showSideYear: boolean;
-  backgroundColor: string;
 }
 
 export const defaultSetting: FamilyTreeSetting = {
@@ -50,18 +49,33 @@ export const defaultSetting: FamilyTreeSetting = {
   showGrid: true,
   showSideYear: true,
   showYears: true,
-  backgroundColor: "rgba(128, 253, 12, 0.27)",
 };
+
+const defaultLineColors: string[] = [
+  "rgb(0, 0, 0)",
+  "rgb(255, 41, 95)",
+  "rgb(68, 0, 179)",
+  "rgb(255, 35, 35)",
+  "rgb(0, 122, 116)",
+  "rgb(158, 71, 0)",
+  "rgb(41, 146, 0)",
+  "rgb(179, 0, 125)",
+  "rgb(134, 125, 0)",
+  "rgb(102, 0, 0)",
+];
 
 abstract class Setting {
   static setting: FamilyTreeSetting = defaultSetting;
+  static lineColors: string[] = ["rgb(0, 0, 0)"];
 
   getSetting() {
     return Setting.setting;
   }
-
-  constructor(setting: FamilyTreeSetting) {
+  constructor(setting: FamilyTreeSetting);
+  constructor(setting: FamilyTreeSetting, lineColors: string[]);
+  constructor(setting: FamilyTreeSetting, lineColors?: string[]) {
     this.setSetting(setting);
+    this.setLineColors(lineColors ?? defaultLineColors);
   }
 
   protected setSetting(setting: FamilyTreeSetting) {
@@ -72,6 +86,18 @@ abstract class Setting {
       bywordsFont: { ...setting.bywordsFont },
       yearFont: { ...setting.yearFont },
     };
+  }
+
+  setLineColors(lineColors: string[]) {
+    Setting.lineColors = [...lineColors];
+  }
+
+  getLineColors() {
+    return Setting.lineColors;
+  }
+
+  getLineColorOfId(id: number) {
+    return Setting.lineColors[id % Setting.lineColors.length];
   }
 
   getNameFont() {
@@ -131,14 +157,6 @@ abstract class Setting {
   }
 
   abstract setShowYears(showYears: boolean): void;
-
-  getBackgroundColor() {
-    return Setting.setting.backgroundColor;
-  }
-
-  setBackgroundColor(backgroundColor: string) {
-    Setting.setting.backgroundColor = backgroundColor;
-  }
 }
 
 export class FamilyTree extends Setting {

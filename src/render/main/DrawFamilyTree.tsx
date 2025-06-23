@@ -34,8 +34,8 @@ function drawNames(
 
     ctx.beginPath();
     ctx.lineWidth = lineWidth;
-    ctx.fillStyle = "rgba(255, 255, 255, 0.7)";
-    ctx.strokeStyle = "rgb(136, 136, 136)";
+    ctx.fillStyle = "rgba(241, 255, 243, 0.5)";
+    ctx.strokeStyle = "rgb(48, 99, 0)";
     ctx.rect(x - offset, y - offset, width + 2 * offset, height + 2 * offset);
     ctx.fill();
     ctx.stroke();
@@ -56,13 +56,14 @@ interface Vertical {
   y2: number;
   x: number;
   isDouble: boolean;
+  color: string;
 }
 
 function drawHorizontal(ctx: CanvasRenderingContext2D, ...lines: Horizontal[]) {
   for (const line of lines) {
     if (line.isDouble) {
       ctx.beginPath();
-      ctx.strokeStyle = "black";
+      // ctx.strokeStyle = "black";
       ctx.lineWidth = 3 * lineWidth;
       ctx.moveTo(line.x1, line.y);
       ctx.lineTo(line.x2, line.y);
@@ -76,7 +77,7 @@ function drawHorizontal(ctx: CanvasRenderingContext2D, ...lines: Horizontal[]) {
       );
     } else {
       ctx.beginPath();
-      ctx.strokeStyle = "black";
+      // ctx.strokeStyle = "black";
       ctx.lineWidth = lineWidth;
       ctx.moveTo(line.x2, line.y);
       ctx.lineTo(line.x1, line.y);
@@ -88,6 +89,7 @@ function drawHorizontal(ctx: CanvasRenderingContext2D, ...lines: Horizontal[]) {
 function drawVertical(ctx: CanvasRenderingContext2D, line: Vertical) {
   const y1 = Math.min(line.y1, line.y2);
   const y2 = Math.max(line.y1, line.y2);
+  ctx.strokeStyle = line.color;
 
   if (line.isDouble) {
     if (y2 - y1 > 4 * lineWidth) {
@@ -100,7 +102,7 @@ function drawVertical(ctx: CanvasRenderingContext2D, line: Vertical) {
     }
 
     ctx.beginPath();
-    ctx.strokeStyle = "black";
+    // ctx.strokeStyle = "black";
     ctx.lineWidth = 3 * lineWidth;
     ctx.moveTo(line.x, y1);
     ctx.lineTo(line.x, y2);
@@ -118,7 +120,7 @@ function drawVertical(ctx: CanvasRenderingContext2D, line: Vertical) {
     }
 
     ctx.beginPath();
-    ctx.strokeStyle = "black";
+    // ctx.strokeStyle = "black";
     ctx.lineWidth = lineWidth;
     ctx.moveTo(line.x, y1);
     ctx.lineTo(line.x, y2);
@@ -143,6 +145,9 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
   const marriages = familyTree.getMarriageMap();
 
   for (const [id] of marriages) {
+    const color = familyTree.getLineColorOfId(id);
+    ctx.strokeStyle = color;
+
     const parents = familyTree.findSpousesOfMarriage(id);
     const unsortedChildrenProps: ChildProperties[] = [];
 
@@ -203,6 +208,7 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
           x: childprops.centerX,
           y1: allChildrenTopY - margin,
           y2: childprops.topY,
+          color: color,
         };
         verticals.push(v);
       }
@@ -229,6 +235,7 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
             x: childCenterX,
             y1: parentBottomY,
             y2: isDouble ? childTopY + margin / 2 : childTopY,
+            color: color,
           };
           verticals.push(v);
         } else if (childTopY - margin > parentBottomY + margin) {
@@ -238,6 +245,7 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
             x: parentCenterX,
             y1: parentBottomY,
             y2: childTopY - margin,
+            color: color,
           };
           const h: Horizontal = {
             isDouble: isDouble,
@@ -250,6 +258,7 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
             x: childCenterX,
             y1: childTopY - margin,
             y2: isDouble ? childTopY + margin / 2 : childTopY,
+            color: color,
           };
           drawHorizontal(ctx, h);
           verticals.push(v1, v2);
@@ -267,6 +276,7 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
               x: parentCenterX,
               y1: parentBottomY,
               y2: parentBottomY + margin,
+              color: color,
             };
             const h1: Horizontal = {
               isDouble: isDouble,
@@ -279,6 +289,7 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
               x: middleX,
               y1: parentBottomY + margin,
               y2: childTopY - margin,
+              color: color,
             };
             const h2: Horizontal = {
               isDouble: isDouble,
@@ -291,6 +302,7 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
               x: childCenterX,
               y1: childTopY - margin,
               y2: isDouble ? childTopY + margin / 2 : childTopY,
+              color: color,
             };
             drawHorizontal(ctx, h1, h2);
             verticals.push(v1, v2, v3);
@@ -307,6 +319,7 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
               x: parentCenterX,
               y1: parentBottomY,
               y2: parentBottomY + margin,
+              color: color,
             };
             const h1: Horizontal = {
               isDouble: isDouble,
@@ -319,6 +332,7 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
               x: middleX,
               y1: parentBottomY + margin,
               y2: childTopY - margin,
+              color: color,
             };
             const h2: Horizontal = {
               isDouble: isDouble,
@@ -331,6 +345,7 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
               x: childCenterX,
               y1: childTopY - margin,
               y2: isDouble ? childTopY + margin / 2 : childTopY,
+              color: color,
             };
             drawHorizontal(ctx, h1, h2);
             verticals.push(v1, v2, v3);
@@ -360,6 +375,7 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
               x: middleX,
               y1: parentBottomY,
               y2: allChildrenTopY - margin,
+              color: color,
             };
             verticals.push(v);
           } else {
@@ -370,6 +386,7 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
                 y1: parentBottomY,
                 y2: allChildrenTopY - margin,
                 x: parentCenterX,
+                color: color,
               };
               const h: Horizontal = {
                 isDouble: false,
@@ -386,6 +403,7 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
                 y1: parentBottomY,
                 y2: allChildrenTopY - margin,
                 x: parentCenterX,
+                color: color,
               };
               const h: Horizontal = {
                 isDouble: false,
@@ -413,6 +431,7 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
               x: parentCenterX,
               y1: parentBottomY,
               y2: parentBottomY + margin,
+              color: color,
             };
             const h1: Horizontal = {
               isDouble: false,
@@ -425,6 +444,7 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
               x: middleX,
               y1: parentBottomY + margin,
               y2: allChildrenTopY - 2 * margin,
+              color: color,
             };
             const h2: Horizontal = {
               isDouble: false,
@@ -437,6 +457,7 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
               x: childX,
               y1: allChildrenTopY - 2 * margin,
               y2: allChildrenTopY - margin,
+              color: color,
             };
             drawHorizontal(ctx, h1, h2);
             verticals.push(v1, v2, v3);
@@ -455,6 +476,7 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
               x: parentCenterX,
               y1: parentBottomY,
               y2: parentBottomY + margin,
+              color: color,
             };
             const h1: Horizontal = {
               isDouble: false,
@@ -467,6 +489,7 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
               x: middleX,
               y1: parentBottomY + margin,
               y2: allChildrenTopY - 2 * margin,
+              color: color,
             };
             const h2: Horizontal = {
               isDouble: false,
@@ -479,6 +502,7 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
               x: childX,
               y1: allChildrenTopY - 2 * margin,
               y2: allChildrenTopY - margin,
+              color: color,
             };
             drawHorizontal(ctx, h1, h2);
             verticals.push(v1, v2, v3);
@@ -501,6 +525,7 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
             y2: childProps.isAdopted
               ? childProps.topY + margin / 2
               : childProps.topY,
+            color: color,
           };
           verticals.push(v);
         }
@@ -550,6 +575,7 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
               x: leftParentRightX + margin,
               y1: leftParentCenterY,
               y2: rightParentCenterY,
+              color: color,
             };
             parentHorizontal.x1 = leftParentRightX + margin;
             parentHorizontal.x2 = rightParentLeftX;
@@ -569,6 +595,7 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
               x: rightParentLeftX - margin,
               y1: rightParentCenterY,
               y2: leftParentCenterY,
+              color: color,
             };
             parentHorizontal.x1 = leftParentRightX;
             parentHorizontal.x2 = rightParentLeftX - margin;
@@ -595,6 +622,7 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
             x: rightParentLeftX - margin,
             y1: rightParentCenterY,
             y2: middleY,
+            color: color,
           };
           const h2: Horizontal = {
             isDouble: true,
@@ -607,6 +635,7 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
             x: leftParentRightX + margin,
             y1: middleY,
             y2: leftParentCenterY,
+            color: color,
           };
           parentHorizontal.x1 = leftParentRightX;
           parentHorizontal.x2 = leftParentRightX + margin;
@@ -633,6 +662,7 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
             x: leftParentRightX + margin,
             y1: leftParentCenterY,
             y2: middleY,
+            color: color,
           };
           const h2: Horizontal = {
             isDouble: true,
@@ -645,6 +675,7 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
             x: rightParentLeftX - margin,
             y1: middleY,
             y2: rightParentCenterY,
+            color: color,
           };
           parentHorizontal.x1 = rightParentLeftX - margin;
           parentHorizontal.x2 = rightParentLeftX;
@@ -668,6 +699,7 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
             x: leftParentLeftX - margin,
             y1: leftParentCenterY,
             y2: parentBottomY + margin,
+            color: color,
           };
           parentHorizontal.x1 = leftParentLeftX - margin;
           parentHorizontal.x2 = rightParentRightX + margin;
@@ -677,6 +709,7 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
             x: rightParentRightX + margin,
             y1: parentBottomY + margin,
             y2: rightParentCenterY,
+            color: color,
           };
           const h2: Horizontal = {
             isDouble: true,
@@ -709,6 +742,7 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
               x: childCenterX,
               y1: parentHorizontal.y,
               y2: isDouble ? childTopY + margin / 2 : childTopY,
+              color: color,
             };
             verticals.push(v);
           } else {
@@ -725,6 +759,7 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
                 x: parentX,
                 y1: parentHorizontal.y,
                 y2: parentHorizontal.y + margin,
+                color: color,
               };
               const h1: Horizontal = {
                 isDouble: isDouble,
@@ -737,6 +772,7 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
                 x: childRightX + margin,
                 y1: parentHorizontal.y + margin,
                 y2: childTopY - margin,
+                color: color,
               };
               const h2: Horizontal = {
                 isDouble: isDouble,
@@ -749,6 +785,7 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
                 x: childCenterX,
                 y1: childTopY - margin,
                 y2: isDouble ? childTopY + margin / 2 : childTopY,
+                color: color,
               };
               drawHorizontal(ctx, h1, h2);
               verticals.push(v1, v2, v3);
@@ -765,6 +802,7 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
                 x: parentX,
                 y1: parentHorizontal.y,
                 y2: parentHorizontal.y + margin,
+                color: color,
               };
               const h1: Horizontal = {
                 isDouble: isDouble,
@@ -777,6 +815,7 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
                 x: childLeftX - margin,
                 y1: parentHorizontal.y + margin,
                 y2: childTopY - margin,
+                color: color,
               };
               const h2: Horizontal = {
                 isDouble: isDouble,
@@ -789,6 +828,7 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
                 x: childCenterX,
                 y1: childTopY - margin,
                 y2: isDouble ? childTopY + margin / 2 : childTopY,
+                color: color,
               };
               drawHorizontal(ctx, h1, h2);
               verticals.push(v1, v2, v3);
@@ -820,6 +860,7 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
                 x: parentX,
                 y1: parentHorizontal.y,
                 y2: middleY,
+                color: color,
               };
               const h: Horizontal = {
                 isDouble: isDouble,
@@ -832,6 +873,7 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
                 x: childCenterX,
                 y1: middleY,
                 y2: isDouble ? childTopY + margin / 2 : childTopY,
+                color: color,
               };
               drawHorizontal(ctx, h);
               verticals.push(v1, v2);
@@ -847,6 +889,7 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
                 x: parentX,
                 y1: parentHorizontal.y,
                 y2: parentHorizontal.y + margin,
+                color: color,
               };
               const h1: Horizontal = {
                 isDouble: isDouble,
@@ -859,6 +902,7 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
                 x: middleX,
                 y1: parentHorizontal.y + margin,
                 y2: childTopY - margin,
+                color: color,
               };
               const h2: Horizontal = {
                 isDouble: isDouble,
@@ -871,6 +915,7 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
                 x: childCenterX,
                 y1: childTopY - margin,
                 y2: isDouble ? childTopY + margin / 2 : childTopY,
+                color: color,
               };
               drawHorizontal(ctx, h1, h2);
               verticals.push(v1, v2, v3);
@@ -894,6 +939,7 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
                 x: parentX,
                 y1: parentHorizontal.y,
                 y2: middleY,
+                color: color,
               };
               const h: Horizontal = {
                 isDouble: isDouble,
@@ -906,6 +952,7 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
                 x: childCenterX,
                 y1: middleY,
                 y2: isDouble ? childTopY + margin / 2 : childTopY,
+                color: color,
               };
               drawHorizontal(ctx, h);
               verticals.push(v1, v2);
@@ -916,6 +963,7 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
                 x: parentX,
                 y1: parentHorizontal.y,
                 y2: leftBottomY + margin,
+                color: color,
               };
               const h1: Horizontal = {
                 isDouble: isDouble,
@@ -928,6 +976,7 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
                 x: childRightX + margin,
                 y1: leftBottomY + margin,
                 y2: childTopY - margin,
+                color: color,
               };
               const h2: Horizontal = {
                 isDouble: isDouble,
@@ -940,6 +989,7 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
                 x: childCenterX,
                 y1: childTopY - margin,
                 y2: isDouble ? childTopY + margin / 2 : childTopY,
+                color: color,
               };
               drawHorizontal(ctx, h1, h2);
               verticals.push(v1, v2, v3);
@@ -971,6 +1021,7 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
                 x: parentX,
                 y1: parentHorizontal.y,
                 y2: middleY,
+                color: color,
               };
               const h: Horizontal = {
                 isDouble: isDouble,
@@ -983,6 +1034,7 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
                 x: childCenterX,
                 y1: middleY,
                 y2: isDouble ? childTopY + margin / 2 : childTopY,
+                color: color,
               };
               drawHorizontal(ctx, h);
               verticals.push(v1, v2);
@@ -998,6 +1050,7 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
                 x: parentX,
                 y1: parentHorizontal.y,
                 y2: parentHorizontal.y + margin,
+                color: color,
               };
               const h1: Horizontal = {
                 isDouble: isDouble,
@@ -1010,6 +1063,7 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
                 x: middleX,
                 y1: parentHorizontal.y + margin,
                 y2: childTopY - margin,
+                color: color,
               };
               const h2: Horizontal = {
                 isDouble: isDouble,
@@ -1022,6 +1076,7 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
                 x: childCenterX,
                 y1: childTopY - margin,
                 y2: isDouble ? childTopY + margin / 2 : childTopY,
+                color: color,
               };
               drawHorizontal(ctx, h1, h2);
               verticals.push(v1, v2, v3);
@@ -1048,6 +1103,7 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
                 x: parentX,
                 y1: parentHorizontal.y,
                 y2: middleY,
+                color: color,
               };
               const h: Horizontal = {
                 isDouble: isDouble,
@@ -1060,6 +1116,7 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
                 x: childCenterX,
                 y1: middleY,
                 y2: isDouble ? childTopY + margin / 2 : childTopY,
+                color: color,
               };
               drawHorizontal(ctx, h);
               verticals.push(v1, v2);
@@ -1070,6 +1127,7 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
                 x: parentX,
                 y1: parentHorizontal.y,
                 y2: rightBottomY + margin,
+                color: color,
               };
               const h1: Horizontal = {
                 isDouble: isDouble,
@@ -1082,6 +1140,7 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
                 x: childLeftX - margin,
                 y1: rightBottomY + margin,
                 y2: childTopY - margin,
+                color: color,
               };
               const h2: Horizontal = {
                 isDouble: isDouble,
@@ -1094,6 +1153,7 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
                 x: childCenterX,
                 y1: childTopY - margin,
                 y2: isDouble ? childTopY + margin / 2 : childTopY,
+                color: color,
               };
               drawHorizontal(ctx, h1, h2);
               verticals.push(v1, v2, v3);
@@ -1120,6 +1180,7 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
               x: (leftX + rightX) / 2,
               y1: parentHorizontal.y,
               y2: allChildrenTopY - margin,
+              color: color,
             };
             verticals.push(v);
           } else {
@@ -1141,6 +1202,7 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
                 x: parentX,
                 y1: parentHorizontal.y,
                 y2: parentHorizontal.y + margin,
+                color: color,
               };
               const h1: Horizontal = {
                 isDouble: false,
@@ -1153,6 +1215,7 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
                 x: middleX,
                 y1: parentHorizontal.y + margin,
                 y2: allChildrenTopY - 2 * margin,
+                color: color,
               };
               const h2: Horizontal = {
                 isDouble: false,
@@ -1165,6 +1228,7 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
                 x: childX,
                 y1: allChildrenTopY - 2 * margin,
                 y2: allChildrenTopY - margin,
+                color: color,
               };
               drawHorizontal(ctx, h1, h2);
               verticals.push(v1, v2, v3);
@@ -1185,6 +1249,7 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
                 x: parentX,
                 y1: parentHorizontal.y,
                 y2: parentHorizontal.y + margin,
+                color: color,
               };
               const h1: Horizontal = {
                 isDouble: false,
@@ -1197,6 +1262,7 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
                 x: middleX,
                 y1: parentHorizontal.y + margin,
                 y2: allChildrenTopY - 2 * margin,
+                color: color,
               };
               const h2: Horizontal = {
                 isDouble: false,
@@ -1209,6 +1275,7 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
                 x: childX,
                 y1: allChildrenTopY - 2 * margin,
                 y2: allChildrenTopY - margin,
+                color: color,
               };
               drawHorizontal(ctx, h1, h2);
               verticals.push(v1, v2, v3);
@@ -1249,6 +1316,7 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
                 x: parentX,
                 y1: parentHorizontal.y,
                 y2: middleY,
+                color: color,
               };
               const h: Horizontal = {
                 isDouble: false,
@@ -1261,6 +1329,7 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
                 x: childX,
                 y1: middleY,
                 y2: allChildrenTopY - margin,
+                color: color,
               };
               drawHorizontal(ctx, h);
               verticals.push(v1, v2);
@@ -1281,6 +1350,7 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
                 x: parentX,
                 y1: parentHorizontal.y,
                 y2: parentHorizontal.y + margin,
+                color: color,
               };
               const h1: Horizontal = {
                 isDouble: false,
@@ -1293,6 +1363,7 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
                 x: middleX,
                 y1: parentHorizontal.y + margin,
                 y2: allChildrenTopY - 2 * margin,
+                color: color,
               };
               const h2: Horizontal = {
                 isDouble: false,
@@ -1305,6 +1376,7 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
                 x: childX,
                 y1: allChildrenTopY - 2 * margin,
                 y2: allChildrenTopY - margin,
+                color: color,
               };
               drawHorizontal(ctx, h1, h2);
               verticals.push(v1, v2, v3);
@@ -1336,6 +1408,7 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
                 x: parentX,
                 y1: parentHorizontal.y,
                 y2: middleY,
+                color: color,
               };
               const h: Horizontal = {
                 isDouble: false,
@@ -1348,6 +1421,7 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
                 x: childX,
                 y1: middleY,
                 y2: allChildrenTopY - margin,
+                color: color,
               };
               drawHorizontal(ctx, h);
               verticals.push(v1, v2);
@@ -1358,6 +1432,7 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
                 x: parentX,
                 y1: parentHorizontal.y,
                 y2: leftBottomY + margin,
+                color: color,
               };
               const h1: Horizontal = {
                 isDouble: false,
@@ -1370,6 +1445,7 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
                 x: middleX,
                 y1: leftBottomY + margin,
                 y2: allChildrenTopY - 2 * margin,
+                color: color,
               };
               const h2: Horizontal = {
                 isDouble: false,
@@ -1382,6 +1458,7 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
                 x: childX,
                 y1: allChildrenTopY - 2 * margin,
                 y2: allChildrenTopY - margin,
+                color: color,
               };
               drawHorizontal(ctx, h1, h2);
               verticals.push(v1, v2, v3);
@@ -1421,6 +1498,7 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
                 x: parentX,
                 y1: parentHorizontal.y,
                 y2: middleY,
+                color: color,
               };
               const h: Horizontal = {
                 isDouble: false,
@@ -1433,6 +1511,7 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
                 x: childX,
                 y1: middleY,
                 y2: allChildrenTopY - margin,
+                color: color,
               };
               drawHorizontal(ctx, h);
               verticals.push(v1, v2);
@@ -1452,6 +1531,7 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
                 x: parentX,
                 y1: parentHorizontal.y,
                 y2: parentHorizontal.y + margin,
+                color: color,
               };
               const h1: Horizontal = {
                 isDouble: false,
@@ -1464,6 +1544,7 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
                 x: middleX,
                 y1: parentHorizontal.y + margin,
                 y2: allChildrenTopY - 2 * margin,
+                color: color,
               };
               const h2: Horizontal = {
                 isDouble: false,
@@ -1476,6 +1557,7 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
                 x: childX,
                 y1: allChildrenTopY - 2 * margin,
                 y2: allChildrenTopY - margin,
+                color: color,
               };
               drawHorizontal(ctx, h1, h2);
               verticals.push(v1, v2, v3);
@@ -1509,6 +1591,7 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
                 x: parentX,
                 y1: parentHorizontal.y,
                 y2: middleY,
+                color: color,
               };
               const h: Horizontal = {
                 isDouble: false,
@@ -1521,6 +1604,7 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
                 x: childX,
                 y1: middleY,
                 y2: allChildrenTopY - margin,
+                color: color,
               };
               drawHorizontal(ctx, h);
               verticals.push(v1, v2);
@@ -1531,6 +1615,7 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
                 x: parentX,
                 y1: parentHorizontal.y,
                 y2: rightBottomY + margin,
+                color: color,
               };
               const h1: Horizontal = {
                 isDouble: false,
@@ -1543,6 +1628,7 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
                 x: middleX,
                 y1: rightBottomY + margin,
                 y2: allChildrenTopY - 2 * margin,
+                color: color,
               };
               const h2: Horizontal = {
                 isDouble: false,
@@ -1555,6 +1641,7 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
                 x: childX,
                 y1: allChildrenTopY - 2 * margin,
                 y2: allChildrenTopY - margin,
+                color: color,
               };
               drawHorizontal(ctx, h1, h2);
               verticals.push(v1, v2, v3);
@@ -1578,6 +1665,7 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
             y2: childProps.isAdopted
               ? childProps.topY + margin / 2
               : childProps.topY,
+            color: color,
           };
           verticals.push(v);
         }
@@ -1651,7 +1739,7 @@ function drawRuler(
         ctx.stroke();
       }
       if (i > 0) {
-        ticks.push({ height: i * minorGrid, text: `${i * majorTick}年` });
+        ticks.push({ height: i * minorGrid, text: `${i * minorTick}年` });
       } else {
         ticks.push({
           height: i * minorGrid,

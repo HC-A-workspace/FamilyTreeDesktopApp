@@ -12,105 +12,116 @@ type PersonId = number | undefined;
 type MarriageId = number | undefined;
 
 export interface FamilyTreeSetting {
-  nameFont: FontData;
-  selectedNameFont: FontData;
+  commonFont: FontData;
+  maleFont: FontData;
+  femaleFont: FontData;
   yearFont: FontData;
   bywordsFont: FontData;
+  lineColors: string[];
+  useCommonColor: boolean;
+  useColorList: boolean;
   isVertical: boolean;
   showBywords: boolean;
   showYears: boolean;
   showGrid: boolean;
   showSideYear: boolean;
+  backgroundColor: string;
+  borderColor: string;
+  nameBackgroundColor: string;
+  nameBorderColor: string;
 }
 
 export const defaultSetting: FamilyTreeSetting = {
-  nameFont: {
+  commonFont: {
     weight: 400,
     size: 20,
-    family: ["Yu Mincho"],
+    family: "Yu Mincho",
+    color: "#000000",
   },
-  selectedNameFont: {
-    weight: 700,
+  maleFont: {
+    weight: 400,
     size: 20,
-    family: ["Yu Mincho"],
+    family: "Yu Mincho",
+    color: "#210dd6",
+  },
+  femaleFont: {
+    weight: 400,
+    size: 20,
+    family: "Yu Mincho",
+    color: "#ff3737",
   },
   bywordsFont: {
     weight: 400,
     size: 8,
-    family: ["serif"],
+    family: "sans-serif",
+    color: "#000000",
   },
   yearFont: {
     weight: 400,
     size: 8,
-    family: ["serif"],
+    family: "sans-serif",
+    color: "#000000",
   },
+  lineColors: [
+    "#000000",
+    "#ff255f",
+    "#4400b3",
+    "#ff2323",
+    "#007a74",
+    "#9e4700",
+    "#259200",
+    "#b3007d",
+    "#867d00",
+    "#660000",
+  ],
+  useCommonColor: false,
+  useColorList: true,
   isVertical: true,
   showBywords: true,
   showGrid: true,
   showSideYear: true,
   showYears: true,
+  backgroundColor: "#ffffff",
+  borderColor: "#438b00",
+  nameBackgroundColor: "#f1fff3",
+  nameBorderColor: "#306308",
 };
-
-const defaultLineColors: string[] = [
-  "rgb(0, 0, 0)",
-  "rgb(255, 41, 95)",
-  "rgb(68, 0, 179)",
-  "rgb(255, 35, 35)",
-  "rgb(0, 122, 116)",
-  "rgb(158, 71, 0)",
-  "rgb(41, 146, 0)",
-  "rgb(179, 0, 125)",
-  "rgb(134, 125, 0)",
-  "rgb(102, 0, 0)",
-];
 
 abstract class Setting {
   static setting: FamilyTreeSetting = defaultSetting;
-  static lineColors: string[] = ["rgb(0, 0, 0)"];
 
   getSetting() {
     return Setting.setting;
   }
-  constructor(setting: FamilyTreeSetting);
-  constructor(setting: FamilyTreeSetting, lineColors: string[]);
-  constructor(setting: FamilyTreeSetting, lineColors?: string[]) {
+  constructor(setting: FamilyTreeSetting) {
     this.setSetting(setting);
-    this.setLineColors(lineColors ?? defaultLineColors);
   }
 
   protected setSetting(setting: FamilyTreeSetting) {
     Setting.setting = {
       ...setting,
-      nameFont: { ...setting.nameFont },
-      selectedNameFont: { ...setting.selectedNameFont },
+      commonFont: { ...setting.commonFont },
+      maleFont: { ...setting.maleFont },
+      femaleFont: { ...setting.femaleFont },
       bywordsFont: { ...setting.bywordsFont },
       yearFont: { ...setting.yearFont },
+      lineColors: [...setting.lineColors],
     };
   }
 
-  setLineColors(lineColors: string[]) {
-    Setting.lineColors = [...lineColors];
-  }
-
   getLineColors() {
-    return Setting.lineColors;
+    return Setting.setting.lineColors;
   }
 
   getLineColorOfId(id: number) {
-    return Setting.lineColors[id % Setting.lineColors.length];
+    return Setting.setting.lineColors[id % Setting.setting.lineColors.length];
   }
 
   getNameFont() {
-    return Setting.setting.nameFont;
+    return Setting.setting.commonFont;
   }
 
   abstract setNameFont(font: FontData): void;
-
-  getSelectedNameFont() {
-    return Setting.setting.selectedNameFont;
-  }
-
-  abstract setSelectedNameFont(font: FontData): void;
 
   getBywordsFont() {
     return Setting.setting.bywordsFont;
@@ -192,32 +203,8 @@ export class FamilyTree extends Setting {
     setting: FamilyTreeSetting
   ) {
     super(setting);
-    this.personMap = new Map(
-      people.length === 0
-        ? []
-        : people[0] instanceof Person
-          ? (people as Person[]).map((p) => [p.getId(), p])
-          : (people as PersonData[]).map((p) => [p.id, new Person(p)])
-    );
-
-    this.marriageMap = new Map(
-      marriages.length === 0
-        ? []
-        : marriages[0] instanceof Marriage
-          ? (marriages as Marriage[]).map((m) => [m.getId(), m])
-          : (marriages as MarriageData[]).map((m) => [m.id, new Marriage(m)])
-    );
-
-    this.spotList = new Map(
-      spots.length === 0
-        ? []
-        : spots[0] instanceof Spot
-          ? (spots as Spot[]).map((spot) => [spot.getId(), spot.clone()])
-          : (spots as SpotData[]).map((spot) => [spot.id, new Spot(spot)])
-    );
-
+    this.personMap = new Map();
     if (people.length > 0) {
-      this.personMap = new Map();
       if (people[0] instanceof Person) {
         this.topY = people[0].getTopY();
         this.bottomY = people[0].getBottomY();
@@ -246,22 +233,27 @@ export class FamilyTree extends Setting {
       }
     }
 
+    this.marriageMap = new Map(
+      marriages.length === 0
+        ? []
+        : marriages[0] instanceof Marriage
+          ? (marriages as Marriage[]).map((m) => [m.getId(), m])
+          : (marriages as MarriageData[]).map((m) => [m.id, new Marriage(m)])
+    );
+
+    this.spotList = new Map(
+      spots.length === 0
+        ? []
+        : spots[0] instanceof Spot
+          ? (spots as Spot[]).map((spot) => [spot.getId(), spot.clone()])
+          : (spots as SpotData[]).map((spot) => [spot.id, new Spot(spot)])
+    );
+
     this.nextPersonId = people.length;
     this.nextMarriageId = marriages.length;
     this.nextSpotId = spots.length;
 
     this.normalizeId();
-  }
-
-  clone(): FamilyTree {
-    const clone = new FamilyTree(
-      Array.from(this.personMap.values()),
-      Array.from(this.marriageMap.values()),
-      Array.from(this.spotList.values()),
-      FamilyTree.setting
-    );
-    clone.title = this.title;
-    return clone;
   }
 
   personStyleUpdate() {
@@ -473,13 +465,6 @@ export class FamilyTree extends Setting {
   }
 
   normalizeId() {
-    for (const m of this.marriageMap.values()) {
-      const sortedChildren = this.findChildrenOfMarriage(m.getId()).sort(
-        (c1, c2) => c2.getCenterX() - c1.getCenterX()
-      );
-      m.raw().childrenIds = sortedChildren.map((c) => c.getId());
-    }
-
     const personRules = new Map<number, number>(
       Array.from(this.personMap.keys()).map((oldIdx, newIdx) => [
         oldIdx,
@@ -1048,21 +1033,20 @@ export class FamilyTree extends Setting {
   }
 
   setNameFont(font: FontData): void {
-    FamilyTree.setting.nameFont = { ...font };
+    FamilyTree.setting.commonFont = { ...font };
     this.personStyleUpdate();
   }
-  setSelectedNameFont(font: FontData): void {
-    FamilyTree.setting.selectedNameFont = { ...font };
-    this.personStyleUpdate();
-  }
+
   setBywordsFont(font: FontData): void {
     FamilyTree.setting.bywordsFont = { ...font };
     this.personStyleUpdate();
   }
+
   setYearFont(font: FontData): void {
     FamilyTree.setting.yearFont = { ...font };
     this.personStyleUpdate();
   }
+
   setFamilyTreeSetting(setting: FamilyTreeSetting) {
     this.setSetting(setting);
     this.personStyleUpdate();

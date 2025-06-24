@@ -1,0 +1,10 @@
+.tick-panel {
+  position: absolute;
+  font-size: large;
+}
+
+div#tick {
+  position: absolute;
+  align-items: center;
+  font-family: sans-serif;
+}

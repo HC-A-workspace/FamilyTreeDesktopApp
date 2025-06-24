@@ -1,4 +1,4 @@
-import { Position } from "../model/FundamentalData";
+import { FontData, getFont, Position } from "../model/FundamentalData";
 
 export class SingleTextInformation {
   private static smallCharList = "っゃゅょぁぃぅぇぉッャュョァィゥェォ";
@@ -14,14 +14,12 @@ export class SingleTextInformation {
   private height: number = 0;
   private relativeUL: Position = { x: 0, y: 0 };
   private isRotated: boolean = false;
-  private font: string = "";
-  private color: string = "rgb(0, 0, 0)";
+  private font: FontData;
 
-  constructor(text: string, font: string, color: string);
+  constructor(text: string, font: FontData);
   constructor(
     text: string,
-    font: string,
-    color: string,
+    font: FontData,
     width: number,
     height: number,
     relativeUL: Position,
@@ -29,8 +27,7 @@ export class SingleTextInformation {
   );
   constructor(
     text: string,
-    font: string,
-    color: string,
+    font: FontData,
     width?: number,
     height?: number,
     relativeUL?: Position,
@@ -38,7 +35,6 @@ export class SingleTextInformation {
   ) {
     this.text = text;
     this.font = font;
-    this.color = color;
 
     if (
       width !== undefined &&
@@ -92,8 +88,8 @@ export class SingleTextInformation {
     verticalTextRelativeUL: Position,
     mainUL: Position
   ) {
-    ctx.fillStyle = this.color;
-    ctx.font = this.font;
+    ctx.fillStyle = this.font.color;
+    ctx.font = getFont(this.font);
     ctx.textBaseline = "alphabetic";
     if (this.isRotated === false) {
       ctx.fillText(
@@ -116,7 +112,6 @@ export class SingleTextInformation {
     return new SingleTextInformation(
       this.text,
       this.font,
-      this.color,
       this.width,
       this.height,
       this.relativeUL,
@@ -125,7 +120,7 @@ export class SingleTextInformation {
   }
 
   private halfNumberJustify() {
-    SingleTextInformation.ctx.font = this.font;
+    SingleTextInformation.ctx.font = getFont(this.font);
     const metric = SingleTextInformation.ctx.measureText(this.text);
     const baseMetric = SingleTextInformation.ctx.measureText("8");
     if (this.text.length <= 3) {
@@ -144,7 +139,7 @@ export class SingleTextInformation {
   }
 
   private rotatedTextJustfy() {
-    SingleTextInformation.ctx.font = this.font;
+    SingleTextInformation.ctx.font = getFont(this.font);
     const metric = SingleTextInformation.ctx.measureText(this.text);
     this.width =
       metric.actualBoundingBoxAscent + metric.actualBoundingBoxDescent;
@@ -157,7 +152,7 @@ export class SingleTextInformation {
   }
 
   private smallCharJustfy() {
-    SingleTextInformation.ctx.font = this.font;
+    SingleTextInformation.ctx.font = getFont(this.font);
     const metric = SingleTextInformation.ctx.measureText(
       SingleTextInformation.baseSmallChar
     );
@@ -181,7 +176,7 @@ export class SingleTextInformation {
   }
 
   private punctuationJustify() {
-    SingleTextInformation.ctx.font = this.font;
+    SingleTextInformation.ctx.font = getFont(this.font);
     const metric = SingleTextInformation.ctx.measureText(
       SingleTextInformation.baseSmallChar
     );
@@ -203,7 +198,7 @@ export class SingleTextInformation {
   }
 
   private rotatedCenterCharJustify() {
-    SingleTextInformation.ctx.font = this.font;
+    SingleTextInformation.ctx.font = getFont(this.font);
     this.normalCharJustify();
     const metric = SingleTextInformation.ctx.measureText(
       SingleTextInformation.baseChar
@@ -222,7 +217,7 @@ export class SingleTextInformation {
   }
 
   private rotatedCenterHalfCharJustify() {
-    SingleTextInformation.ctx.font = this.font;
+    SingleTextInformation.ctx.font = getFont(this.font);
     this.normalCharJustify();
     const metric = SingleTextInformation.ctx.measureText("(");
     this.height = metric.width;
@@ -233,7 +228,7 @@ export class SingleTextInformation {
   }
 
   private normalCharJustify() {
-    SingleTextInformation.ctx.font = this.font;
+    SingleTextInformation.ctx.font = getFont(this.font);
     const baseMetric = SingleTextInformation.ctx.measureText(
       SingleTextInformation.baseChar
     );

@@ -1,0 +1,117 @@
+.setting-editor {
+  font-family: sans-serif;
+  background-color: white;
+  padding: 10px;
+}
+
+div#tab {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+div#tab > input {
+  display: none;
+}
+
+div#tab > label {
+  flex: 1 1;
+  order: -1;
+  padding: 0.7em 1em 0.5em;
+  border-bottom: 1px solid #f0f0f0;
+  background-color: #e9f0f6;
+  color: #535353;
+  font-size: 1.1em;
+  text-align: center;
+  cursor: pointer;
+  margin-bottom: 1em;
+}
+
+div#tab > label:hover {
+  opacity: 0.8;
+}
+
+div#tab > div {
+  display: none;
+  width: 100%;
+}
+
+div#tab > input:checked + label {
+  background-color: #fff;
+  border-color: #2589d0 #f0f0f0 #fff;
+  border-style: solid;
+  border-width: 4px 1px 1px;
+  border-radius: 5px;
+  color: #333333;
+}
+
+div#tab > input:checked + label + div {
+  display: block;
+}
+
+div#checkbox-style {
+  display: flex;
+  margin-bottom: 0.7em;
+  align-items: center;
+  gap: 0.5em;
+}
+
+div#text-title {
+  font-size: 1.5em;
+  font-family: sans-serif;
+  margin-bottom: 0.3em;
+  text-align: center;
+}
+
+div#font-container {
+  display: flex;
+  gap: 0.5em;
+  margin-bottom: 1em;
+  align-items: center;
+}
+
+input#font-size {
+  font-size: 1em;
+  width: 1.5em;
+  text-align: right;
+  padding: 0.1em 0.3em;
+  margin-right: 0.3em;
+}
+
+input#font-size::-webkit-outer-spin-button,
+input#font-size::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="color"] {
+  width: 30px;
+  height: 30px;
+}
+
+hr {
+  width: 95%;
+}
+
+.color-list {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.color-list > button {
+  width: 30px;
+  height: 30px;
+  font-size: large;
+}
+
+div#color-container-title {
+  font-size: 1.2em;
+  margin-bottom: 0.4em;
+}
+
+div#color-container {
+  display: flex;
+  gap: 0.4em;
+  align-items: center;
+  margin-bottom: 1em;
+}

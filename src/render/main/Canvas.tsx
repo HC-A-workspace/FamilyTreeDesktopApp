@@ -72,22 +72,8 @@ interface TitleProps {
 const Title: React.FC<TitleProps> = ({ margin, title, setTitle }) => {
   return (
     <input
-      className="title"
+      id="title"
       type="text"
-      style={{
-        position: "absolute",
-        // top: margin,
-        left: "30%",
-        right: "30%",
-        font: "MS PGothic",
-        fontSize: "30px",
-        fontWeight: "bold",
-        textAlign: "center",
-        borderTop: "none",
-        borderLeft: "none",
-        borderRight: "none",
-        backgroundColor: "rgba(0,0,0,0)",
-      }}
       value={title}
       placeholder="タイトルを入力"
       onChange={(e) => setTitle(e.target.value)}
@@ -456,11 +442,6 @@ const App: React.FC = () => {
         setState(State.Usual);
       }
     }
-    setContextMenuVisible(false);
-    setPersonMenuVisible(false);
-    setDisplaySpotEditor(false);
-    setDisplaySpotMenu(false);
-    setIsDragging(true);
     const unscaledMousePos = unscaledPosition(pos, offset, scale);
     movingSpot.current = familyTree.getSpotAt(unscaledMousePos, scale);
     if (movingSpot.current !== undefined) {
@@ -481,8 +462,14 @@ const App: React.FC = () => {
           x: unscaledMousePos.x - movingPerson.current.getLeftX(),
           y: unscaledMousePos.y - movingPerson.current.getTopY(),
         };
+        forceUpdate();
       }
     }
+    setContextMenuVisible(false);
+    setPersonMenuVisible(false);
+    setDisplaySpotEditor(false);
+    setDisplaySpotMenu(false);
+    setIsDragging(true);
     dragStart.current = { x: pos.x - offset.x, y: pos.y - offset.y };
   };
 
@@ -715,19 +702,16 @@ const App: React.FC = () => {
         }}
       />
       <canvas
+        className="canvas"
         ref={canvasRef}
         width={canvasWidth()}
         height={canvasHeight()}
         style={{
-          border: "2px solid rgb(67, 139, 0)",
-          zIndex: 0,
-          position: "absolute",
           top: margin,
           left: margin,
-          // backgroundColor: "rgba(128, 253, 12, 0.27)",
-          backgroundColor: "rgb(255, 255, 255)",
+          backgroundColor: FamilyTree.setting.backgroundColor,
+          borderColor: FamilyTree.setting.borderColor,
         }}
-        className="canvas"
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}

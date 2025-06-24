@@ -75,13 +75,12 @@ export interface Name {
 export interface FontData {
   weight: number;
   size: number;
-  family: string[];
+  family: string;
+  color: string;
 }
 
 export function getFont(font: FontData) {
-  const weightSize = `${font.weight} ${font.size}pt`;
-  const fonts = font.family.map((s) => `'${s}'`).join(", ");
-  return `${weightSize} ${fonts}`;
+  return `${font.weight} ${font.size}pt '${font.family}'`;
 }
 
 export class Queue<T> {

@@ -203,8 +203,8 @@ app.whenReady().then(() => {
       webPreferences: {
         preload: path.join(__dirname, "preload.js"),
       },
-      width: 330,
-      height: 450,
+      width: 350,
+      height: 590,
     });
     settingEditorWindow.loadFile(path.join(__dirname, "../dist/index.html"), {
       hash: "/settingEditor",

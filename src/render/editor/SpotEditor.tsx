@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Position } from "../../model/FundamentalData";
 import { SpotData } from "../../model/Spot";
+import "./SpotEditor.css";
 
 interface SpotEditorProperties {
   spot: SpotData;
@@ -19,29 +20,21 @@ const SpotEditor: React.FC<SpotEditorProperties> = ({
 
   return (
     <div
+      className="spot-editor"
       style={{
-        border: "1px solid black",
-        position: "absolute",
         top: position.y,
         left: position.x,
-        backgroundColor: "rgb(255, 255, 255)",
-        padding: 5,
-        boxShadow: "2px 2px 5px rgba(0, 0, 0, 0.46)",
-        zIndex: 1,
-        borderRadius: 9,
       }}
     >
-      <div style={{ display: "flex", margin: 3 }}>
-        <input
-          type="text"
-          placeholder="スポットの名前"
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-        />
-      </div>
-      <div style={{ display: "flex" }}>
+      <div className="spot-editor-title">スポット</div>
+      <input
+        type="text"
+        placeholder="スポットの名前"
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+      />
+      <div className="spot-editor-button-container">
         <button
-          style={{ margin: 3 }}
           onClick={() => {
             if (text !== "") {
               onSave(text);
@@ -51,9 +44,7 @@ const SpotEditor: React.FC<SpotEditorProperties> = ({
         >
           保存
         </button>
-        <button style={{ margin: 3 }} onClick={onClose}>
-          キャンセル
-        </button>
+        <button onClick={onClose}>キャンセル</button>
       </div>
     </div>
   );

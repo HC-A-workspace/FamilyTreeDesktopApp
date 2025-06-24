@@ -1,4 +1,5 @@
 import React from "react";
+import "./Ticks.css";
 
 interface TicksProperties {
   top: number;
@@ -19,8 +20,8 @@ const Ticks: React.FC<TicksProperties> = ({
 }) => {
   return (
     <div
+      className="tick-panel"
       style={{
-        position: "absolute",
         top: top,
         left: left,
         width: width,
@@ -31,13 +32,11 @@ const Ticks: React.FC<TicksProperties> = ({
       {ticks.map(({ height, text }, idx) => (
         <React.Fragment key={idx}>
           <div
+            id="tick"
             style={{
-              position: "absolute",
               top: height - 10,
               left: 10,
               height: 20,
-              display: "flex",
-              alignItems: "center",
             }}
           >
             {text}

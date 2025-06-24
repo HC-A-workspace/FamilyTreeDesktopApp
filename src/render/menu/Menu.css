@@ -1,0 +1,31 @@
+.menu-panel {
+  position: absolute;
+  background-color: white;
+  border-color: black;
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.46);
+  z-index: 1;
+  border-radius: 9px;
+  font-size: small;
+  padding: 8px 0;
+  user-select: none;
+}
+
+.single-menu {
+  cursor: pointer;
+  padding: 0.3em 0;
+  display: flex;
+}
+
+.single-menu-icon {
+  width: 3em;
+  text-align: center;
+  font-size: small;
+  font-family: sans-serif;
+}
+
+.single-menu-text {
+  text-align: left;
+  font-size: 1em;
+  font-family: sans-serif;
+  margin-right: 2em;
+}

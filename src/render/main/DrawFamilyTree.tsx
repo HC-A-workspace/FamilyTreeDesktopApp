@@ -1,4 +1,4 @@
-import type { FamilyTree } from "../../model/FamilyTree";
+import { FamilyTree } from "../../model/FamilyTree";
 import type { Person } from "../../model/Person";
 import { Spot } from "../../model/Spot";
 
@@ -34,8 +34,9 @@ function drawNames(
 
     ctx.beginPath();
     ctx.lineWidth = lineWidth;
-    ctx.fillStyle = "rgba(241, 255, 243, 0.5)";
-    ctx.strokeStyle = "rgb(48, 99, 0)";
+    const color = FamilyTree.setting.nameBackgroundColor;
+    ctx.fillStyle = `rgba(${parseInt(color.slice(1, 3), 16)}, ${parseInt(color.slice(3, 5), 16)}, ${parseInt(color.slice(5, 7), 16)}, 0.5)`;
+    ctx.strokeStyle = FamilyTree.setting.nameBorderColor;
     ctx.rect(x - offset, y - offset, width + 2 * offset, height + 2 * offset);
     ctx.fill();
     ctx.stroke();
@@ -63,7 +64,6 @@ function drawHorizontal(ctx: CanvasRenderingContext2D, ...lines: Horizontal[]) {
   for (const line of lines) {
     if (line.isDouble) {
       ctx.beginPath();
-      // ctx.strokeStyle = "black";
       ctx.lineWidth = 3 * lineWidth;
       ctx.moveTo(line.x1, line.y);
       ctx.lineTo(line.x2, line.y);
@@ -77,7 +77,6 @@ function drawHorizontal(ctx: CanvasRenderingContext2D, ...lines: Horizontal[]) {
       );
     } else {
       ctx.beginPath();
-      // ctx.strokeStyle = "black";
       ctx.lineWidth = lineWidth;
       ctx.moveTo(line.x2, line.y);
       ctx.lineTo(line.x1, line.y);
@@ -102,7 +101,6 @@ function drawVertical(ctx: CanvasRenderingContext2D, line: Vertical) {
     }
 
     ctx.beginPath();
-    // ctx.strokeStyle = "black";
     ctx.lineWidth = 3 * lineWidth;
     ctx.moveTo(line.x, y1);
     ctx.lineTo(line.x, y2);
@@ -120,7 +118,6 @@ function drawVertical(ctx: CanvasRenderingContext2D, line: Vertical) {
     }
 
     ctx.beginPath();
-    // ctx.strokeStyle = "black";
     ctx.lineWidth = lineWidth;
     ctx.moveTo(line.x, y1);
     ctx.lineTo(line.x, y2);

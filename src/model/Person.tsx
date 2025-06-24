@@ -93,17 +93,6 @@ export function personDataClone(personData: PersonData): PersonData {
   };
 }
 
-function getNameColor(sex: Sex) {
-  switch (sex) {
-    case Sex.Male:
-      return "rgb(33, 13, 214)";
-    case Sex.Female:
-      return "rgb(226, 8, 73)";
-    default:
-      return "rgb(0, 0, 0)";
-  }
-}
-
 export class Person {
   private data: PersonData = getEmptyPersonData(-1, { x: 0, y: 0 });
   private nameText: TextInformation = new VerticalTextInformation();
@@ -141,9 +130,22 @@ export class Person {
   }
 
   private adjustPositionVertically() {
-    const nameFont = this.isSelected
-      ? FamilyTree.setting.selectedNameFont
-      : FamilyTree.setting.nameFont;
+    let nameFont = FamilyTree.setting.commonFont;
+    if (FamilyTree.setting.useCommonColor === false) {
+      switch (this.data.sex) {
+        case Sex.Male:
+          nameFont = FamilyTree.setting.maleFont;
+          break;
+        case Sex.Female:
+          nameFont = FamilyTree.setting.femaleFont;
+          break;
+        default:
+          break;
+      }
+    }
+    if (this.isSelected) {
+      nameFont.weight += 300;
+    }
 
     const spacing = nameFont.size / 4;
 
@@ -214,9 +216,22 @@ export class Person {
     this.width = this.nameText.getWidth();
     this.height = this.nameText.getHeight();
 
-    const nameFont = this.isSelected
-      ? FamilyTree.setting.selectedNameFont
-      : FamilyTree.setting.nameFont;
+    let nameFont = FamilyTree.setting.commonFont;
+    if (FamilyTree.setting.useCommonColor === false) {
+      switch (this.data.sex) {
+        case Sex.Male:
+          nameFont = FamilyTree.setting.maleFont;
+          break;
+        case Sex.Female:
+          nameFont = FamilyTree.setting.femaleFont;
+          break;
+        default:
+          break;
+      }
+    }
+    if (this.isSelected) {
+      nameFont.weight += 300;
+    }
 
     const spacing = nameFont.size / 4;
 
@@ -279,35 +294,46 @@ export class Person {
     if (data !== undefined) {
       this.data = personDataClone(data);
     }
-    const color = getNameColor(this.data.sex);
-    const nameFont = this.isSelected
-      ? FamilyTree.setting.selectedNameFont
-      : FamilyTree.setting.nameFont;
+    let nameFont = { ...FamilyTree.setting.commonFont };
+    if (FamilyTree.setting.useCommonColor === false) {
+      switch (this.data.sex) {
+        case Sex.Male:
+          nameFont = { ...FamilyTree.setting.maleFont };
+          break;
+        case Sex.Female:
+          nameFont = { ...FamilyTree.setting.femaleFont };
+          break;
+        default:
+          break;
+      }
+    }
+
+    if (this.isSelected) {
+      nameFont.weight = 700;
+    } else {
+      nameFont.weight = 400;
+    }
     if (FamilyTree.setting.isVertical) {
       this.nameText = new VerticalTextInformation(
         displayName(this.data.name),
-        nameFont,
-        color
+        nameFont
       );
     } else {
       this.nameText = new HorizontalTextInformation(
         displayName(this.data.name),
-        nameFont,
-        color
+        nameFont
       );
     }
     if (this.data.bywords !== "" && FamilyTree.setting.showBywords) {
       if (FamilyTree.setting.isVertical) {
         this.bywordsText = new VerticalTextInformation(
           this.data.bywords,
-          FamilyTree.setting.bywordsFont,
-          "rgb(0, 0, 0)"
+          FamilyTree.setting.bywordsFont
         );
       } else {
         this.bywordsText = new HorizontalTextInformation(
           this.data.bywords,
-          FamilyTree.setting.bywordsFont,
-          "rgb(0, 0, 0)"
+          FamilyTree.setting.bywordsFont
         );
       }
     } else {
@@ -320,8 +346,7 @@ export class Person {
       const prefix = this.data.birthday.isBC ? "前" : "";
       this.birthText = new HorizontalTextInformation(
         `${prefix}${this.data.birthday?.year}年 生`,
-        FamilyTree.setting.yearFont,
-        "rgb(0, 0, 0)"
+        FamilyTree.setting.yearFont
       );
     } else {
       this.birthText = undefined;
@@ -333,8 +358,7 @@ export class Person {
       const prefix = this.data.deathday.isBC ? "前" : "";
       this.deathText = new HorizontalTextInformation(
         `${prefix}${this.data.deathday?.year}年 没`,
-        FamilyTree.setting.yearFont,
-        "rgb(0, 0, 0)"
+        FamilyTree.setting.yearFont
       );
     } else {
       this.deathText = undefined;
@@ -358,8 +382,7 @@ export class Person {
       const death = deathPrefix + (this.data.deathday?.year ?? "?");
       this.birthText = new HorizontalTextInformation(
         `${birth} ~ ${death}`,
-        FamilyTree.setting.yearFont,
-        "rgb(0, 0, 0)"
+        FamilyTree.setting.yearFont
       );
     }
     this.adjustPosition();

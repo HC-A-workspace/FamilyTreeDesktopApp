@@ -1,3 +1,28 @@
+canvas {
+  position: absolute;
+  border-width: 2px;
+  border-style: solid;
+  border-radius: 10px;
+}
+
 canvas:focus {
+  outline: none;
+}
+
+input#title {
+  position: absolute;
+  left: 30%;
+  right: 30%;
+  font-weight: bold;
+  font-size: 30px;
+  text-align: center;
+  border-top: none;
+  border-left: none;
+  border-right: none;
+  font-family: "MS PGothic";
+  background-color: white;
+}
+
+input#title:focus {
   outline: none;
 }

@@ -1,5 +1,3 @@
-import React from "react";
-
 interface SingleItemProps {
   item: string;
   width: number;
@@ -70,7 +68,7 @@ const ListEditor: React.FC<ListEditorProps> = ({
   return (
     <div>
       {list.map((text, idx) => (
-        <React.Fragment key={idx}>
+        <div key={idx}>
           <SingleItem
             item={text}
             width={width}
@@ -78,7 +76,7 @@ const ListEditor: React.FC<ListEditorProps> = ({
             onDelete={() => onDelete(idx)}
             placeholderText={`${placeholder} ${idx + 1}`}
           />
-        </React.Fragment>
+        </div>
       ))}
       <button
         onClick={onAdd}

@@ -7,30 +7,19 @@ export abstract class TextInformation {
   protected font: FontData = {
     weight: 400,
     size: 20,
-    family: ["Yu Mincho"],
+    family: "Yu Mincho",
+    color: "rgb(0, 0, 0)",
   };
-  protected color = "";
   protected relativeUL: Position = { x: 0, y: 0 };
   protected text = "";
   protected singleTextInfos: SingleTextInformation[] = [];
 
   constructor();
-  constructor(text: string, font: string | FontData, color: string);
-  constructor(text?: string, font?: string | FontData, color?: string) {
-    if (text !== undefined && font !== undefined && color !== undefined) {
+  constructor(text: string, font: FontData);
+  constructor(text?: string, font?: FontData) {
+    if (text !== undefined && font !== undefined) {
       this.text = text;
-      this.color = color;
-      if (typeof font === "string") {
-        const weightSize = font.slice(0, font.indexOf("p")).split(" ");
-        const fonts = font.slice(font.indexOf("p") + 2).split(",");
-        this.font = {
-          weight: Number(weightSize[0]),
-          size: Number(weightSize[1]),
-          family: fonts.map((str) => str.replace(/['"]/g, "").trim().trim()),
-        };
-      } else {
-        this.font = font;
-      }
+      this.font = font;
     }
     this.align();
   }
@@ -48,7 +37,7 @@ export abstract class TextInformation {
   }
 
   getColor() {
-    return this.color;
+    return this.font.color;
   }
 
   getRelativeUL(): Position {
@@ -61,7 +50,7 @@ export abstract class TextInformation {
   }
 
   setColor(color: string) {
-    this.color = color;
+    this.font.color = color;
   }
 
   translate(dx: number, dy: number) {
@@ -75,11 +64,6 @@ export abstract class TextInformation {
 
   setText(text: string) {
     this.text = text;
-    this.align();
-  }
-
-  setFontFamily(fontFamily: string[]) {
-    this.font.family = fontFamily;
     this.align();
   }
 
@@ -119,11 +103,7 @@ export class VerticalTextInformation extends TextInformation {
 
     this.singleTextInfos = [];
     for (const c of this.split()) {
-      const singleInfo = new SingleTextInformation(
-        c,
-        this.getFont(),
-        this.color
-      );
+      const singleInfo = new SingleTextInformation(c, this.font);
       singleInfo.translate(0, this.height);
       this.singleTextInfos.push(singleInfo);
       this.height += singleInfo.getHeight() + spacing;
@@ -136,7 +116,7 @@ export class VerticalTextInformation extends TextInformation {
   }
 
   draw(ctx: CanvasRenderingContext2D, position: Position): void {
-    ctx.fillStyle = this.color;
+    ctx.fillStyle = this.font.color;
     for (const c of this.singleTextInfos) {
       c.draw(ctx, this.relativeUL, position);
     }
@@ -195,7 +175,6 @@ export class VerticalTextInformation extends TextInformation {
     clone.width = this.width;
     clone.height = this.height;
     clone.font = this.font;
-    clone.color = this.color;
     clone.singleTextInfos = [
       ...this.singleTextInfos.map((info) => info.clone()),
     ];
@@ -215,7 +194,7 @@ export class HorizontalTextInformation extends TextInformation {
   }
 
   draw(ctx: CanvasRenderingContext2D, position: Position): void {
-    ctx.fillStyle = this.color;
+    ctx.fillStyle = this.font.color;
     ctx.font = this.getFont();
     ctx.textBaseline = "top";
     ctx.fillText(
@@ -229,7 +208,6 @@ export class HorizontalTextInformation extends TextInformation {
     const clone = new HorizontalTextInformation();
     clone.text = this.text;
     clone.font = this.font;
-    clone.color = this.color;
     clone.width = this.width;
     clone.height = this.height;
     clone.relativeUL = { ...this.relativeUL };

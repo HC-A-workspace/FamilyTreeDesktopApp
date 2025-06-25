@@ -142,7 +142,9 @@ function drawLines(ctx: CanvasRenderingContext2D, familyTree: FamilyTree) {
   const marriages = familyTree.getMarriageMap();
 
   for (const [id] of marriages) {
-    const color = familyTree.getLineColorOfId(id);
+    const color = FamilyTree.setting.useColorList
+      ? familyTree.getLineColorOfId(id)
+      : "#000000";
     ctx.strokeStyle = color;
 
     const parents = familyTree.findSpousesOfMarriage(id);

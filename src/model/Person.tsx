@@ -6,10 +6,13 @@ import {
 import { FamilyTree } from "./FamilyTree";
 import {
   emptyStringToUndefined,
+  SearchedWord,
   Sex,
+  Field,
   type Date,
   type Name,
   type Position,
+  SearchResult,
 } from "./FundamentalData";
 
 export interface PersonData {
@@ -270,6 +273,10 @@ export class Person {
 
   public getNameTextInfo(): TextInformation {
     return this.nameText;
+  }
+
+  getText() {
+    return displayName(this.data.name);
   }
 
   public getByWordsTextInfo(): TextInformation | undefined {
@@ -628,5 +635,149 @@ export class Person {
 
   getIsFixedVertically() {
     return this.data.isFixedVertically;
+  }
+
+  search(familyTree: FamilyTree, texts: string[]): SearchResult {
+    const results: SearchedWord[] = [];
+    for (const text of texts) {
+      const result = this.searchSingleWord(familyTree, text);
+      if (result) {
+        results.push(result);
+      }
+    }
+    return {
+      type: this,
+      result: results.sort((res1, res2) => res1.field - res2.field),
+    };
+  }
+
+  private searchSingleWord(
+    familyTree: FamilyTree,
+    text: string
+  ): SearchedWord | undefined {
+    const name = displayName(this.data.name);
+    if (name.includes(text)) {
+      return {
+        field: Field.Name,
+        text: name,
+      };
+    }
+    for (const alias of this.data.aliases) {
+      if (alias.includes(text)) {
+        return {
+          field: Field.Alias,
+          text: alias,
+        };
+      }
+    }
+
+    if (this.data.bywords.includes(text)) {
+      return {
+        field: Field.Bywords,
+        text: this.data.bywords,
+      };
+    }
+
+    for (const id of this.data.marriageIds) {
+      const sprouse = familyTree
+        .findSpousesOfMarriage(id)
+        .filter((p) => p.data.id !== this.data.id)
+        .map((p) => displayName(p.data.name));
+      for (const name of sprouse) {
+        if (name.includes(text)) {
+          return {
+            field: Field.Sprouse,
+            text: name,
+          };
+        }
+      }
+
+      const children = familyTree
+        .findChildrenOfMarriage(id)
+        .map((p) => displayName(p.data.name));
+      for (const name of children) {
+        if (name.includes(text)) {
+          return {
+            field: Field.Child,
+            text: name,
+          };
+        }
+      }
+
+      const adoptedChildren = familyTree
+        .findAdoptedChildrenOfMarriage(id)
+        .map((p) => displayName(p.data.name));
+      for (const name of adoptedChildren) {
+        if (name.includes(text)) {
+          return {
+            field: Field.Child,
+            text: name,
+          };
+        }
+      }
+    }
+
+    const parents: string[] = familyTree
+      .findParents(this.data.id)
+      .map((p) => displayName(p.data.name));
+    for (const name of parents) {
+      if (name.includes(text)) {
+        return {
+          field: Field.Parent,
+          text: name,
+        };
+      }
+    }
+
+    const adoptedParents: string[] = familyTree
+      .findAdoptedParents(this.data.id)
+      .map((p) => displayName(p.data.name));
+    for (const name of adoptedParents) {
+      if (name.includes(text)) {
+        return {
+          field: Field.Parent,
+          text: name,
+        };
+      }
+    }
+
+    for (const work of this.data.works) {
+      const idx = work.indexOf(text);
+      if (idx !== -1) {
+        return {
+          field: Field.Work,
+          text: work.slice(idx, idx + text.length + 3),
+        };
+      }
+    }
+    for (const word of this.data.words) {
+      const idx = word.indexOf(text);
+      if (idx !== -1) {
+        return {
+          field: Field.Word,
+          text: word.slice(idx, idx + text.length + 3),
+        };
+      }
+    }
+
+    const idx = this.data.description.indexOf(text);
+    if (idx !== -1) {
+      const additional = 3;
+      const prefix = idx - additional > 0 ? "..." : "";
+      const postfix =
+        idx + text.length + additional !== this.data.description.length - 1
+          ? "..."
+          : "";
+      return {
+        field: Field.Desciption,
+        text:
+          prefix +
+          this.data.description.slice(
+            Math.max(idx - additional, 0),
+            idx + text.length + 3
+          ) +
+          postfix,
+      };
+    }
   }
 }

@@ -1,3 +1,6 @@
+import { Person } from "./Person";
+import { Spot } from "./Spot";
+
 export const Sex = {
   Male: 0,
   Female: 1,
@@ -81,6 +84,54 @@ export interface FontData {
 
 export function getFont(font: FontData) {
   return `${font.weight} ${font.size}pt '${font.family}'`;
+}
+
+export const Field = {
+  Name: 0,
+  Spot: 1,
+  Tag: 2,
+  Alias: 3,
+  Bywords: 4,
+  Sprouse: 5,
+  Parent: 6,
+  Child: 7,
+  Brother: 8,
+  Work: 9,
+  Word: 10,
+  Desciption: 11,
+} as const;
+
+export type Field = (typeof Field)[keyof typeof Field];
+
+export interface SearchedWord {
+  field: Field;
+  text: string;
+}
+
+export interface SearchResult {
+  type: Person | Spot;
+  result: SearchedWord[];
+}
+
+export function compareSearchResult(
+  result1: SearchResult,
+  result2: SearchResult
+) {
+  if (result1.result.length !== result2.result.length) {
+    return -(result1.result.length - result2.result.length);
+  }
+  for (let i = 0; i < result1.result.length; i++) {
+    const field1 = result1.result[i].field;
+    const field2 = result2.result[i].field;
+    if (field1 !== field2) {
+      return field1 - field2;
+    }
+  }
+  return 0;
+}
+
+export function includesSubtext(strs: string[], text: string): boolean {
+  return strs.some((str) => str.includes(text));
 }
 
 export class Queue<T> {

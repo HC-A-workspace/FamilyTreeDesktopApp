@@ -2,24 +2,6 @@ import { useEffect, useState } from "react";
 import { FamilyTreeSetting } from "../../model/FamilyTree";
 import "./SettingEditor.css";
 
-const fontList = [
-  ["Yu Mincho", "游明朝"],
-  ["sans-serif", "sans-serif"],
-  ["MS PGothic", "MSゴシック"],
-];
-
-const fontOptions = () => {
-  return (
-    <>
-      {fontList.map(([value, text], idx) => {
-        <option key={idx} value={value} style={{ fontFamily: value }}>
-          {text}
-        </option>;
-      })}
-    </>
-  );
-};
-
 const SettingEditor: React.FC = () => {
   const [setting, setSetting] = useState<FamilyTreeSetting | undefined>(
     undefined
@@ -80,7 +62,7 @@ const SettingEditor: React.FC = () => {
             <input type="radio" checked={tab1 === 1} onChange={() => {}} />
             <label onClick={() => setTab1(1)}>全体</label>
             <div>
-              <div id="checkbox-style">
+              <label id="checkbox-style">
                 <input
                   type="checkbox"
                   checked={setting.showGrid}
@@ -88,9 +70,9 @@ const SettingEditor: React.FC = () => {
                     setSetting({ ...setting, showGrid: e.target.checked })
                   }
                 />
-                <label>格子を表示する</label>
-              </div>
-              <div id="checkbox-style">
+                格子を表示する
+              </label>
+              <label id="checkbox-style">
                 <input
                   type="checkbox"
                   checked={setting.showSideYear}
@@ -98,9 +80,9 @@ const SettingEditor: React.FC = () => {
                     setSetting({ ...setting, showSideYear: e.target.checked })
                   }
                 />
-                <label>目盛りを表示する</label>
-              </div>
-              <div id="checkbox-style">
+                目盛りを表示する
+              </label>
+              <label id="checkbox-style">
                 <input
                   type="checkbox"
                   checked={setting.isVertical}
@@ -108,8 +90,8 @@ const SettingEditor: React.FC = () => {
                     setSetting({ ...setting, isVertical: e.target.checked })
                   }
                 />
-                <label>縦書きで表示する</label>
-              </div>
+                縦書きで表示する
+              </label>
               <div id="color-container-title">キャンバス</div>
               <div id="color-container">
                 <label>背景色</label>
@@ -234,7 +216,7 @@ const SettingEditor: React.FC = () => {
                       </option>
                     </select>
                   </div>
-                  <div id="checkbox-style">
+                  <label id="checkbox-style">
                     <input
                       type="checkbox"
                       checked={setting.useCommonColor === false}
@@ -245,8 +227,8 @@ const SettingEditor: React.FC = () => {
                         })
                       }
                     />
-                    <label>性別で色を変える</label>
-                  </div>
+                    性別で色を変える
+                  </label>
                   <div id="font-container" hidden={setting.useCommonColor}>
                     {setting.useCommonColor && (
                       <>
@@ -325,7 +307,7 @@ const SettingEditor: React.FC = () => {
                 <input type="radio" checked={tab2 === 2} onChange={() => {}} />
                 <label onClick={() => setTab2(2)}>称号</label>
                 <div>
-                  <div id="checkbox-style">
+                  <label id="checkbox-style">
                     <input
                       type="checkbox"
                       checked={setting.showBywords}
@@ -336,8 +318,8 @@ const SettingEditor: React.FC = () => {
                         })
                       }
                     />
-                    <label>称号を表示する</label>
-                  </div>
+                    称号を表示する
+                  </label>
                   <div id="font-container">
                     <div>
                       <input
@@ -407,16 +389,19 @@ const SettingEditor: React.FC = () => {
                 <input type="radio" checked={tab2 === 3} onChange={() => {}} />
                 <label onClick={() => setTab2(3)}>生没年</label>
                 <div>
-                  <div id="checkbox-style">
+                  <label id="checkbox-style">
                     <input
                       type="checkbox"
                       checked={setting.showYears}
                       onChange={(e) =>
-                        setSetting({ ...setting, showYears: e.target.checked })
+                        setSetting({
+                          ...setting,
+                          showYears: e.target.checked,
+                        })
                       }
                     />
-                    <label>生没年を表示する</label>
-                  </div>
+                    生没年を表示する
+                  </label>
                   <div id="font-container">
                     <div>
                       <input
@@ -485,7 +470,7 @@ const SettingEditor: React.FC = () => {
             <input type="radio" checked={tab1 === 3} onChange={() => {}} />
             <label onClick={() => setTab1(3)}>線</label>
             <div>
-              <div id="checkbox-style">
+              <label id="checkbox-style">
                 <input
                   type="checkbox"
                   checked={setting.useColorList}
@@ -493,8 +478,8 @@ const SettingEditor: React.FC = () => {
                     setSetting({ ...setting, useColorList: e.target.checked })
                   }
                 />
-                <label>色リストを用いる</label>
-              </div>
+                色リストを用いる
+              </label>
               <div className="color-list">
                 {setting.lineColors.map((color, idx) => (
                   <div key={idx}>
@@ -518,17 +503,7 @@ const SettingEditor: React.FC = () => {
           </div>
 
           <button
-            style={{
-              marginTop: 20,
-              width: "100%",
-              padding: "10px 0",
-              backgroundColor: "#007bff",
-              color: "white",
-              fontWeight: "bold",
-              border: "none",
-              borderRadius: 6,
-              cursor: "pointer",
-            }}
+            id="apply"
             onClick={() => {
               window.electronAPI?.onSendSettingFromSettingEditor(setting);
               window.electronAPI?.onEditorClose();

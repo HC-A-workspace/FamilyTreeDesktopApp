@@ -3,6 +3,7 @@ canvas {
   border-width: 2px;
   border-style: solid;
   border-radius: 10px;
+  z-index: 0;
 }
 
 canvas:focus {
@@ -13,16 +14,22 @@ input#title {
   position: absolute;
   left: 30%;
   right: 30%;
+  width: 30%;
   font-weight: bold;
-  font-size: 30px;
+  font-size: xx-large;
   text-align: center;
   border-top: none;
   border-left: none;
   border-right: none;
   font-family: "MS PGothic";
   background-color: white;
+  z-index: 1;
 }
 
 input#title:focus {
   outline: none;
+}
+
+.upper-body {
+  align-items: flex-start;
 }

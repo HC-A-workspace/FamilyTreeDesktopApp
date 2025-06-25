@@ -1,4 +1,11 @@
-import { FontData, getFont, Position } from "./FundamentalData";
+import {
+  Field,
+  FontData,
+  getFont,
+  Position,
+  SearchedWord,
+  SearchResult,
+} from "./FundamentalData";
 
 export interface SpotData {
   id: number;
@@ -11,7 +18,8 @@ export class Spot {
   private static font: FontData = {
     weight: 600,
     size: 20,
-    family: ["MS Gothic"],
+    family: "MS Gothic",
+    color: "#000000",
   };
   private width: number = 0;
   private height: number = 0;
@@ -40,8 +48,8 @@ export class Spot {
     ctx.textBaseline = "middle";
     ctx.fillText(
       this.data.text,
-      this.data.position.x,
-      this.data.position.y + this.height / (2 * scale)
+      this.data.position.x - this.width / (2 * scale),
+      this.data.position.y
     );
   }
 
@@ -62,12 +70,12 @@ export class Spot {
     const scaledWidth = (this.width + 2 * offset) / scale;
     const scaledHeight = (this.height + 2 * offset) / scale;
     if (
-      this.data.position.x <= uncaledPosition.x &&
-      uncaledPosition.x <= this.data.position.x + scaledWidth
+      this.data.position.x - scaledWidth / 2 <= uncaledPosition.x &&
+      uncaledPosition.x <= this.data.position.x + scaledWidth / 2
     ) {
       if (
-        this.data.position.y <= uncaledPosition.y &&
-        uncaledPosition.y <= this.data.position.y + scaledHeight
+        this.data.position.y - scaledHeight / 2 <= uncaledPosition.y &&
+        uncaledPosition.y <= this.data.position.y + scaledHeight / 2
       ) {
         return true;
       }
@@ -75,11 +83,11 @@ export class Spot {
     return false;
   }
 
-  getLeftX() {
+  getCenterX() {
     return this.data.position.x;
   }
 
-  getTopY() {
+  getCenterY() {
     return this.data.position.y;
   }
 
@@ -90,6 +98,10 @@ export class Spot {
       position: { ...this.data.position },
     };
     this.calculateSize();
+  }
+
+  getText() {
+    return this.data.text;
   }
 
   getData() {
@@ -116,5 +128,25 @@ export class Spot {
     this.data.id += offsetId;
     this.data.position.x += offsetPosition.x;
     this.data.position.y += offsetPosition.y;
+  }
+
+  search(texts: string[]): SearchResult {
+    for (const text of texts) {
+      if (this.data.text.includes(text)) {
+        return {
+          type: this,
+          result: [
+            {
+              field: Field.Spot,
+              text: this.data.text,
+            },
+          ],
+        };
+      }
+    }
+    return {
+      type: this,
+      result: [],
+    };
   }
 }

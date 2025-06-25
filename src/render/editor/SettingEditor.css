@@ -24,6 +24,7 @@ div#tab > label {
   text-align: center;
   cursor: pointer;
   margin-bottom: 1em;
+  user-select: none;
 }
 
 div#tab > label:hover {
@@ -48,11 +49,12 @@ div#tab > input:checked + label + div {
   display: block;
 }
 
-div#checkbox-style {
+label#checkbox-style {
   display: flex;
   margin-bottom: 0.7em;
   align-items: center;
   gap: 0.5em;
+  user-select: none;
 }
 
 div#text-title {
@@ -67,6 +69,10 @@ div#font-container {
   gap: 0.5em;
   margin-bottom: 1em;
   align-items: center;
+}
+
+div#font-container > label {
+  user-select: none;
 }
 
 input#font-size {
@@ -114,4 +120,21 @@ div#color-container {
   gap: 0.4em;
   align-items: center;
   margin-bottom: 1em;
+}
+
+div#color-container > label {
+  user-select: none;
+}
+
+button#apply {
+  margin-top: 20px;
+  width: 100%;
+  padding: 10px 0;
+  background-color: #007bff;
+  color: #ffffff;
+  font-weight: bold;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  user-select: none;
 }

@@ -1,0 +1,40 @@
+.search-window {
+  position: absolute;
+  width: 20%;
+  z-index: 1;
+  left: 75%;
+  font-size: medium;
+}
+
+.search-window > input {
+  font-size: 1em;
+  width: 100%;
+  margin-bottom: 0;
+}
+
+.result {
+  background-color: white;
+  list-style: none;
+  padding-left: 0;
+  margin-top: 0;
+  border-top: none;
+  border-bottom: 1px solid #000000;
+  border-left: 1px solid #000000;
+  border-right: 1px solid #000000;
+}
+
+.result > li {
+  padding: 0.2em;
+}
+
+.result > li:not(:last-child) {
+  border-bottom: 1px dashed #000000;
+}
+
+#result-text {
+  font-size: 1em;
+}
+
+#result-explain {
+  font-size: 0.7em;
+}

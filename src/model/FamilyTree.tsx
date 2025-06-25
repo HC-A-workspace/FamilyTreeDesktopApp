@@ -1,7 +1,9 @@
 import {
+  compareSearchResult,
   FontData,
   Queue,
   sameElementList,
+  SearchResult,
   type Position,
 } from "./FundamentalData";
 import { Marriage, type MarriageData } from "./Marriage";
@@ -1050,5 +1052,31 @@ export class FamilyTree extends Setting {
   setFamilyTreeSetting(setting: FamilyTreeSetting) {
     this.setSetting(setting);
     this.personStyleUpdate();
+  }
+
+  search(texts: string): SearchResult[] {
+    const trimmed = texts.trim();
+
+    if (trimmed === "") {
+      return [];
+    }
+    const words = texts.split(/[\s\u3000]+/g);
+    const results: SearchResult[] = [];
+
+    for (const [, person] of this.personMap) {
+      const result = person.search(this, words);
+      if (result.result.length > 0) {
+        results.push(result);
+      }
+    }
+
+    for (const [, spot] of this.spotList) {
+      const result = spot.search(words);
+      if (result.result.length > 0) {
+        results.push(result);
+      }
+    }
+
+    return results.sort(compareSearchResult);
   }
 }

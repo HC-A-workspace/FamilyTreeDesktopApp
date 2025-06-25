@@ -17,6 +17,7 @@ import { Spot, SpotData } from "../../model/Spot";
 import SpotEditor from "../editor/SpotEditor";
 import SpotMenu from "../menu/SpotMenu";
 import "./Canvas.css";
+import SearchWindow from "./SearchWindow";
 
 export const State = {
   Usual: 0,
@@ -446,8 +447,8 @@ const App: React.FC = () => {
     movingSpot.current = familyTree.getSpotAt(unscaledMousePos, scale);
     if (movingSpot.current !== undefined) {
       selectedOffset.current = {
-        x: unscaledMousePos.x - movingSpot.current.getLeftX(),
-        y: unscaledMousePos.y - movingSpot.current.getTopY(),
+        x: unscaledMousePos.x - movingSpot.current.getCenterX(),
+        y: unscaledMousePos.y - movingSpot.current.getCenterY(),
       };
     } else {
       movingPerson.current = familyTree.getSelectedPerson(unscaledMousePos);
@@ -681,6 +682,21 @@ const App: React.FC = () => {
     pressedKeyRef.current.delete(keyCode);
   };
 
+  const moveCenter = (item: Person | Spot) => {
+    const canvasCenter: Position = {
+      x: (canvasRef.current?.width ?? 0) / 2,
+      y: (canvasRef.current?.height ?? 0) / 2,
+    };
+    const CenterX = item.getCenterX();
+    const CenterY = item.getCenterY();
+
+    setScale(1);
+    setOffset({
+      x: canvasCenter.x - CenterX,
+      y: canvasCenter.y - CenterY,
+    });
+  };
+
   return (
     <div
       style={{
@@ -692,15 +708,24 @@ const App: React.FC = () => {
         backgroundColor: "rgb(255, 255, 255)",
       }}
     >
-      <Title
-        margin={margin}
-        title={title}
-        setTitle={(newTitle) => {
-          familyTree.setTitle(newTitle);
-          save();
-          setTitle(newTitle);
-        }}
-      />
+      <div className="upper-body">
+        <Title
+          margin={margin}
+          title={title}
+          setTitle={(newTitle) => {
+            familyTree.setTitle(newTitle);
+            save();
+            setTitle(newTitle);
+          }}
+        />
+        <SearchWindow
+          onDecide={moveCenter}
+          onSearh={(texts) => {
+            const res = familyTree.search(texts);
+            return res;
+          }}
+        />
+      </div>
       <canvas
         className="canvas"
         ref={canvasRef}

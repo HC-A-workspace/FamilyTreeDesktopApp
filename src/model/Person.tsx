@@ -13,6 +13,8 @@ import {
   type Name,
   type Position,
   SearchResult,
+  isAllHalfWidth,
+  getPlainText,
 } from "./FundamentalData";
 
 export interface PersonData {
@@ -53,11 +55,7 @@ export function getEmptyPersonData(id: number, position: Position): PersonData {
   };
 }
 
-function isAllHalfWidth(str: string): boolean {
-  return /^[\x00-\x7F]*$/.test(str);
-}
-
-function displayName(name: Name) {
+export function displayName(name: Name) {
   if (name.familyName !== undefined) {
     if (isAllHalfWidth(name.familyName) && isAllHalfWidth(name.givenName)) {
       return `${name.givenName} ${name.familyName}`;
@@ -67,6 +65,18 @@ function displayName(name: Name) {
   }
   if (name.title !== undefined) return `${name.givenName}${name.title}`;
   return `${name.givenName}`;
+}
+
+function displayNameKana(name: Name) {
+  if (name.familyName !== undefined) {
+    if (isAllHalfWidth(name.familyName) && isAllHalfWidth(name.givenName)) {
+      return `${name.givenNameKana} ${name.familyNameKana}`;
+    } else {
+      return `${name.familyNameKana}${name.givenNameKana}`;
+    }
+  }
+  if (name.title !== undefined) return `${name.givenNameKana}${name.titleKana}`;
+  return `${name.givenNameKana}`;
 }
 
 export function personDataClone(personData: PersonData): PersonData {
@@ -331,15 +341,18 @@ export class Person {
         nameFont
       );
     }
-    if (this.data.bywords !== "" && FamilyTree.setting.showBywords) {
+    if (
+      getPlainText(this.data.bywords) !== "" &&
+      FamilyTree.setting.showBywords
+    ) {
       if (FamilyTree.setting.isVertical) {
         this.bywordsText = new VerticalTextInformation(
-          this.data.bywords,
+          getPlainText(this.data.bywords),
           FamilyTree.setting.bywordsFont
         );
       } else {
         this.bywordsText = new HorizontalTextInformation(
-          this.data.bywords,
+          getPlainText(this.data.bywords),
           FamilyTree.setting.bywordsFont
         );
       }
@@ -545,9 +558,9 @@ export class Person {
       adoptedParentMarriageId !== undefined
         ? marriageRules.get(adoptedParentMarriageId)
         : undefined;
-    this.data.marriageIds = this.data.marriageIds.map(
-      (id) => marriageRules.get(id) ?? -1
-    );
+    this.data.marriageIds = this.data.marriageIds
+      .map((id) => marriageRules.get(id) ?? -1)
+      .filter((id) => id !== -1);
   }
 
   public eraseDegeneracy() {
@@ -589,7 +602,9 @@ export class Person {
       personData.name.familyNameKana
     );
     personData.name.title = emptyStringToUndefined(personData.name.title);
-
+    personData.name.titleKana = emptyStringToUndefined(
+      personData.name.titleKana
+    );
     if (
       personData.birthday !== undefined &&
       personData.birthday.year === undefined &&
@@ -607,9 +622,16 @@ export class Person {
     ) {
       personData.deathday = undefined;
     }
-    personData.aliases = personData.aliases.filter((alias) => alias !== "");
-    personData.works = personData.works.filter((work) => work !== "");
-    personData.words = personData.words.filter((word) => word !== "");
+    personData.aliases = personData.aliases
+      .map((alias) => alias.trim())
+      .filter((alias) => alias !== "");
+    personData.works = personData.works
+      .map((work) => work.trim())
+      .filter((work) => work !== "");
+    personData.words = personData.words
+      .map((word) => word.trim())
+      .filter((word) => word !== "");
+    personData.description = personData.description.trim();
   }
 
   draw(ctx: CanvasRenderingContext2D) {
@@ -637,6 +659,13 @@ export class Person {
     return this.data.isFixedVertically;
   }
 
+  private includingInName(text: string) {
+    return (
+      displayName(this.data.name).includes(text) ||
+      displayNameKana(this.data.name).includes(text)
+    );
+  }
+
   search(familyTree: FamilyTree, texts: string[]): SearchResult {
     const results: SearchedWord[] = [];
     for (const text of texts) {
@@ -655,128 +684,293 @@ export class Person {
     familyTree: FamilyTree,
     text: string
   ): SearchedWord | undefined {
-    const name = displayName(this.data.name);
-    if (name.includes(text)) {
+    if (this.includingInName(text)) {
       return {
         field: Field.Name,
-        text: name,
+        text: "",
       };
     }
     for (const alias of this.data.aliases) {
-      if (alias.includes(text)) {
+      const plainAlias = getPlainText(alias);
+      if (plainAlias.includes(text)) {
         return {
           field: Field.Alias,
-          text: alias,
+          text: `別名：${plainAlias}`,
         };
       }
     }
 
-    if (this.data.bywords.includes(text)) {
+    const plainBywords = getPlainText(this.data.bywords);
+    if (plainBywords.includes(text)) {
       return {
         field: Field.Bywords,
-        text: this.data.bywords,
+        text: plainBywords,
       };
     }
 
     for (const id of this.data.marriageIds) {
       const sprouse = familyTree
         .findSpousesOfMarriage(id)
-        .filter((p) => p.data.id !== this.data.id)
-        .map((p) => displayName(p.data.name));
-      for (const name of sprouse) {
-        if (name.includes(text)) {
-          return {
-            field: Field.Sprouse,
-            text: name,
-          };
+        .filter((p) => p.data.id !== this.data.id);
+      for (const person of sprouse) {
+        if (person.includingInName(text)) {
+          switch (this.data.sex) {
+            case Sex.Male:
+              return {
+                field: Field.Sprouse,
+                text: `${displayName(person.data.name)}の夫`,
+              };
+            case Sex.Female:
+              return {
+                field: Field.Sprouse,
+                text: `${displayName(person.data.name)}の妻`,
+              };
+            default:
+              return {
+                field: Field.Sprouse,
+                text: `${displayName(person.data.name)}の配偶者`,
+              };
+          }
         }
       }
 
-      const children = familyTree
-        .findChildrenOfMarriage(id)
-        .map((p) => displayName(p.data.name));
-      for (const name of children) {
-        if (name.includes(text)) {
-          return {
-            field: Field.Child,
-            text: name,
-          };
+      const children = familyTree.findChildrenOfMarriage(id);
+      for (const child of children) {
+        if (child.includingInName(text)) {
+          switch (this.data.sex) {
+            case Sex.Male:
+              return {
+                field: Field.Child,
+                text: `${displayName(child.data.name)}の父`,
+              };
+            case Sex.Female:
+              return {
+                field: Field.Child,
+                text: `${displayName(child.data.name)}の母`,
+              };
+            default:
+              return {
+                field: Field.Child,
+                text: `${displayName(child.data.name)}の親`,
+              };
+          }
         }
       }
 
-      const adoptedChildren = familyTree
-        .findAdoptedChildrenOfMarriage(id)
-        .map((p) => displayName(p.data.name));
-      for (const name of adoptedChildren) {
-        if (name.includes(text)) {
-          return {
-            field: Field.Child,
-            text: name,
-          };
+      const adoptedChildren = familyTree.findAdoptedChildrenOfMarriage(id);
+      for (const child of adoptedChildren) {
+        if (child.includingInName(text)) {
+          switch (this.data.sex) {
+            case Sex.Male:
+              return {
+                field: Field.Child,
+                text: `${displayName(child.data.name)}の養父`,
+              };
+            case Sex.Female:
+              return {
+                field: Field.Child,
+                text: `${displayName(child.data.name)}の養母`,
+              };
+            default:
+              return {
+                field: Field.Child,
+                text: `${displayName(child.data.name)}の養親`,
+              };
+          }
         }
       }
     }
 
-    const parents: string[] = familyTree
-      .findParents(this.data.id)
-      .map((p) => displayName(p.data.name));
-    for (const name of parents) {
-      if (name.includes(text)) {
-        return {
-          field: Field.Parent,
-          text: name,
-        };
+    if (this.data.parentMarriageId) {
+      for (const child of familyTree.findAllChildrenOfMarriage(
+        this.data.parentMarriageId
+      )) {
+        if (child.data.id !== this.data.id) {
+          if (child.includingInName(text)) {
+            switch (this.data.sex) {
+              case Sex.Male:
+                return {
+                  field: Field.Brother,
+                  text: `${displayName(child.data.name)}の兄弟`,
+                };
+              case Sex.Female:
+                return {
+                  field: Field.Brother,
+                  text: `${displayName(child.data.name)}の姉妹`,
+                };
+              default:
+                return {
+                  field: Field.Brother,
+                  text: `${displayName(child.data.name)}の兄弟・姉妹`,
+                };
+            }
+          }
+        }
+      }
+      const parents = familyTree.findSpousesOfMarriage(
+        this.data.parentMarriageId
+      );
+      for (const parent of parents) {
+        if (parent.includingInName(text)) {
+          return {
+            field: Field.Parent,
+            text: `${displayName(parent.data.name)}の子`,
+          };
+        }
+        const marriageIds = parent.data.marriageIds.filter(
+          (id) => id !== this.data.parentMarriageId
+        );
+        let prefix;
+        switch (parent.data.sex) {
+          case Sex.Male:
+            prefix = "異母";
+            break;
+          case Sex.Female:
+            prefix = "異父";
+          default:
+            prefix = "異親";
+            break;
+        }
+        for (const mid of marriageIds) {
+          const children = familyTree.findChildrenOfMarriage(mid);
+          for (const child of children) {
+            if (child.includingInName(text)) {
+              switch (this.data.sex) {
+                case Sex.Male:
+                  return {
+                    field: Field.Brother,
+                    text: `${displayName(child.data.name)}の${prefix}兄弟`,
+                  };
+                case Sex.Female:
+                  return {
+                    field: Field.Brother,
+                    text: `${displayName(child.data.name)}の${prefix}姉妹`,
+                  };
+                default:
+                  return {
+                    field: Field.Brother,
+                    text: `${displayName(child.data.name)}の${prefix}兄弟・${prefix}姉妹`,
+                  };
+              }
+            }
+          }
+        }
       }
     }
 
-    const adoptedParents: string[] = familyTree
-      .findAdoptedParents(this.data.id)
-      .map((p) => displayName(p.data.name));
-    for (const name of adoptedParents) {
-      if (name.includes(text)) {
-        return {
-          field: Field.Parent,
-          text: name,
-        };
+    if (this.data.adoptedParentMarriageId) {
+      for (const child of familyTree.findAllChildrenOfMarriage(
+        this.data.adoptedParentMarriageId
+      )) {
+        if (child.data.id !== this.data.id) {
+          if (child.includingInName(text)) {
+            switch (this.data.sex) {
+              case Sex.Male:
+                return {
+                  field: Field.Brother,
+                  text: `${displayName(child.data.name)}の兄弟`,
+                };
+              case Sex.Female:
+                return {
+                  field: Field.Brother,
+                  text: `${displayName(child.data.name)}の姉妹`,
+                };
+              default:
+                return {
+                  field: Field.Brother,
+                  text: `${displayName(child.data.name)}の兄弟・姉妹`,
+                };
+            }
+          }
+        }
+      }
+      const parents = familyTree.findSpousesOfMarriage(
+        this.data.parentMarriageId
+      );
+      for (const parent of parents) {
+        if (parent.includingInName(text)) {
+          return {
+            field: Field.Parent,
+            text: `${displayName(parent.data.name)}の養子`,
+          };
+        }
+        const marriageIds = parent.data.marriageIds.filter(
+          (id) => id !== this.data.parentMarriageId
+        );
+        let prefix;
+        switch (parent.data.sex) {
+          case Sex.Male:
+            prefix = "異母";
+            break;
+          case Sex.Female:
+            prefix = "異父";
+          default:
+            prefix = "異親";
+            break;
+        }
+        for (const mid of marriageIds) {
+          const children = familyTree.findChildrenOfMarriage(mid);
+          for (const child of children) {
+            if (child.includingInName(text)) {
+              switch (this.data.sex) {
+                case Sex.Male:
+                  return {
+                    field: Field.Brother,
+                    text: `${displayName(child.data.name)}の${prefix}兄弟`,
+                  };
+                case Sex.Female:
+                  return {
+                    field: Field.Brother,
+                    text: `${displayName(child.data.name)}の${prefix}姉妹`,
+                  };
+                default:
+                  return {
+                    field: Field.Brother,
+                    text: `${displayName(child.data.name)}の${prefix}兄弟・${prefix}姉妹`,
+                  };
+              }
+            }
+          }
+        }
       }
     }
 
     for (const work of this.data.works) {
-      const idx = work.indexOf(text);
+      const plainWork = getPlainText(work);
+      const idx = plainWork.indexOf(text);
       if (idx !== -1) {
         return {
           field: Field.Work,
-          text: work.slice(idx, idx + text.length + 3),
+          text: `功績：${plainWork.slice(idx, idx + text.length + 3)}`,
         };
       }
     }
     for (const word of this.data.words) {
-      const idx = word.indexOf(text);
+      const plainWord = getPlainText(word);
+      const idx = plainWord.indexOf(text);
       if (idx !== -1) {
         return {
           field: Field.Word,
-          text: word.slice(idx, idx + text.length + 3),
+          text: `言葉・句：${plainWord.slice(idx, idx + text.length + 3)}`,
         };
       }
     }
 
-    const idx = this.data.description.indexOf(text);
+    const plainDescription = getPlainText(this.data.description);
+    const idx = plainDescription.indexOf(text);
     if (idx !== -1) {
       const additional = 3;
       const prefix = idx - additional > 0 ? "..." : "";
       const postfix =
-        idx + text.length + additional !== this.data.description.length - 1
+        idx + text.length + additional !== plainDescription.length - 1
           ? "..."
           : "";
       return {
         field: Field.Desciption,
-        text:
-          prefix +
-          this.data.description.slice(
-            Math.max(idx - additional, 0),
-            idx + text.length + 3
-          ) +
-          postfix,
+        text: `記述：${prefix}${plainDescription.slice(
+          Math.max(idx - additional, 0),
+          idx + text.length + 3
+        )}${postfix}`,
       };
     }
   }

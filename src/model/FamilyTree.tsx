@@ -1,9 +1,11 @@
 import {
   compareSearchResult,
   FontData,
+  ProfileData,
   Queue,
   sameElementList,
   SearchResult,
+  Sex,
   type Position,
 } from "./FundamentalData";
 import { Marriage, type MarriageData } from "./Marriage";
@@ -438,6 +440,10 @@ export class FamilyTree extends Setting {
     ];
   }
 
+  findAllChildrenOfMarriage(marriageId: MarriageId): Person[] {
+    return this.findPersonsByIds(this.getAllChildrenIdsOfMarriage(marriageId));
+  }
+
   getChildrenIds(personId: PersonId): PersonId[] {
     const marriageIds = this.getMarriageIds(personId);
     return marriageIds.flatMap((id) => this.getChildrenIdsOfMarriage(id));
@@ -462,6 +468,19 @@ export class FamilyTree extends Setting {
     return this.findPersonsByIds(this.getAdoptedChildrenIds(personId));
   }
 
+  getAllChildrenIds(personId: PersonId): PersonId[] {
+    return [
+      ...this.getChildrenIds(personId),
+      ...this.getAdoptedChildrenIds(personId),
+    ];
+  }
+
+  findAllChildren(personId: PersonId): Person[] {
+    return this.getAllChildrenIds(personId)
+      .map((id) => this.findPersonById(id))
+      .filter((p) => p !== undefined);
+  }
+
   hasAdoptedChildren(marriageId: MarriageId): boolean {
     return this.findAdoptedChildrenOfMarriage(marriageId).length !== 0;
   }
@@ -482,6 +501,9 @@ export class FamilyTree extends Setting {
     const spotRules = new Map<number, number>(
       Array.from(this.spotList.keys()).map((oldIdx, newIdx) => [oldIdx, newIdx])
     );
+    this.nextPersonId = this.personMap.size;
+    this.nextMarriageId = this.marriageMap.size;
+    this.nextSpotId = this.spotList.size;
 
     this.personMap = new Map<number, Person>(
       Array.from(this.personMap.values()).map((p) => {
@@ -501,8 +523,6 @@ export class FamilyTree extends Setting {
         return [s.getId(), s];
       })
     );
-    this.nextPersonId = this.personMap.size;
-    this.nextMarriageId = this.marriageMap.size;
   }
 
   getPersonData(): PersonData[] {
@@ -1078,5 +1098,98 @@ export class FamilyTree extends Setting {
     }
 
     return results.sort(compareSearchResult);
+  }
+
+  getProfileData(person: Person): ProfileData {
+    const parents = this.findParents(person.getId()).map((p) => p.raw());
+    let deathText = "逝去";
+    if (parents.some((p) => p.name.title === "天皇")) {
+      if (person.raw().sex === Sex.Male) {
+        deathText = "薨御";
+      } else {
+        deathText = "薨去";
+      }
+    }
+    const adoptedParents = this.findAdoptedParents(person.getId()).map((p) =>
+      p.raw()
+    );
+    if (parents.some((p) => p.name.title === "天皇")) {
+      if (person.raw().sex === Sex.Male) {
+        deathText = "薨御";
+      } else {
+        deathText = "薨去";
+      }
+    }
+    if (person.raw().name.title === "天皇") {
+      deathText = "崩御";
+    }
+    const unsortedBrothers: Person[] = [];
+    for (const parent of parents.concat(adoptedParents)) {
+      for (const brother of this.findAllChildren(parent.id)) {
+        if (unsortedBrothers.every((c) => c.getId() !== brother.getId())) {
+          unsortedBrothers.push(brother);
+        }
+      }
+    }
+    const brothers = unsortedBrothers
+      .sort((c1, c2) => c1.getTopY() - c2.getTopY())
+      .map((p) => p.raw());
+
+    const marriages: {
+      sprouse?: PersonData;
+      children: { isAdopted: boolean; child: PersonData }[];
+    }[] = [];
+    for (const id of person.getMarriageIds()) {
+      const sprouses = this.findSpousesOfMarriage(id).filter(
+        (p) => p.getId() !== person.getId()
+      );
+      if (sprouses.some((p) => p.raw().name.title === "天皇")) {
+        deathText = "崩御";
+      }
+      const sprouse = sprouses.length > 0 ? sprouses[0] : undefined;
+      const children: { isAdopted: boolean; child: Person }[] = [];
+      for (const child of this.findChildrenOfMarriage(id)) {
+        children.push({
+          isAdopted: false,
+          child: child,
+        });
+        if (child.raw().name.title === "天皇") {
+          deathText = "崩御";
+        }
+      }
+      for (const child of this.findAdoptedChildrenOfMarriage(id)) {
+        children.push({
+          isAdopted: true,
+          child: child,
+        });
+        if (child.raw().name.title === "天皇") {
+          deathText = "崩御";
+        }
+      }
+      marriages.push({
+        sprouse: sprouse?.raw(),
+        children: children
+          .sort((c1, c2) => c1.child.getTopY() - c2.child.getTopY())
+          .map((p) => {
+            return { isAdopted: p.isAdopted, child: p.child.raw() };
+          }),
+      });
+    }
+    return {
+      person: person.raw(),
+      parents: parents,
+      adoptedParents: adoptedParents,
+      brothers: brothers,
+      marriages: marriages.sort((m1, m2) => {
+        if (!m1.sprouse) {
+          return 1;
+        } else if (!m2.sprouse) {
+          return -1;
+        } else {
+          return -(m1.children.length - m2.children.length);
+        }
+      }),
+      deathText: deathText,
+    };
   }
 }

@@ -27,7 +27,7 @@ export const WithFamilyNameInput: React.FC<WithFamilyNameProps> = ({
           width: width * 0.4,
         }}
         value={name.familyNameKana ?? ""}
-        onChange={(e) => onChangeFamilyNameKana(e.target.value)}
+        onChange={(e) => onChangeFamilyNameKana(e.target.value.trim())}
         placeholder="みょうじ"
       />
       <input
@@ -38,7 +38,7 @@ export const WithFamilyNameInput: React.FC<WithFamilyNameProps> = ({
           width: width * 0.4,
         }}
         value={name.givenNameKana ?? ""}
-        onChange={(e) => onChangeGivenNameKana(e.target.value)}
+        onChange={(e) => onChangeGivenNameKana(e.target.value.trim())}
         placeholder="なまえ"
       />
       <input
@@ -50,7 +50,7 @@ export const WithFamilyNameInput: React.FC<WithFamilyNameProps> = ({
           fontSize: 30,
         }}
         value={name.familyName ?? ""}
-        onChange={(e) => onChangeFamilyName(e.target.value)}
+        onChange={(e) => onChangeFamilyName(e.target.value.trim())}
         placeholder="苗字"
       />
       <input
@@ -63,7 +63,7 @@ export const WithFamilyNameInput: React.FC<WithFamilyNameProps> = ({
         }}
         value={name.givenName}
         onChange={(e) => {
-          onChangeGivenName(e.target.value);
+          onChangeGivenName(e.target.value.trim());
         }}
         placeholder="名前"
       />
@@ -77,6 +77,7 @@ interface WithTitleProps {
   onChangeGivenName: (givenName: string) => void;
   onChangeGivenNameKana: (givenNameKana: string) => void;
   onChangeNameTitle: (nameTitle: string) => void;
+  onChangeNameTitleKana: (nameTitleKana: string) => void;
 }
 
 export const WithTitleInput: React.FC<WithTitleProps> = ({
@@ -85,6 +86,7 @@ export const WithTitleInput: React.FC<WithTitleProps> = ({
   onChangeGivenName,
   onChangeGivenNameKana,
   onChangeNameTitle,
+  onChangeNameTitleKana,
 }) => {
   return (
     <div>
@@ -96,10 +98,20 @@ export const WithTitleInput: React.FC<WithTitleProps> = ({
           width: width * 0.4,
         }}
         value={name.givenNameKana ?? ""}
-        onChange={(e) => onChangeGivenNameKana(e.target.value)}
+        onChange={(e) => onChangeGivenNameKana(e.target.value.trim())}
         placeholder="なまえ"
       />
-      <div style={{ width: width * 0.4 }} />
+      <input
+        type="text"
+        style={{
+          margin: 10,
+          marginBottom: 3,
+          width: width * 0.4,
+        }}
+        value={name.titleKana ?? ""}
+        onChange={(e) => onChangeNameTitleKana(e.target.value.trim())}
+        placeholder="たちば"
+      />
       <input
         type="text"
         style={{
@@ -109,7 +121,7 @@ export const WithTitleInput: React.FC<WithTitleProps> = ({
           fontSize: 30,
         }}
         value={name.givenName}
-        onChange={(e) => onChangeGivenName(e.target.value)}
+        onChange={(e) => onChangeGivenName(e.target.value.trim())}
         placeholder="名前"
       />
       <input
@@ -121,7 +133,7 @@ export const WithTitleInput: React.FC<WithTitleProps> = ({
           fontSize: 30,
         }}
         value={name.title ?? ""}
-        onChange={(e) => onChangeNameTitle(e.target.value)}
+        onChange={(e) => onChangeNameTitle(e.target.value.trim())}
         placeholder="立場"
       />
     </div>
@@ -151,7 +163,7 @@ export const OnlyNameInput: React.FC<OnlyNameProps> = ({
           width: width * 0.8,
         }}
         value={name.givenNameKana ?? ""}
-        onChange={(e) => onChangeGivenNameKana(e.target.value)}
+        onChange={(e) => onChangeGivenNameKana(e.target.value.trim())}
         placeholder="なまえ"
       />
       <div style={{ width: width * 0.4 }} />
@@ -164,7 +176,7 @@ export const OnlyNameInput: React.FC<OnlyNameProps> = ({
           fontSize: 30,
         }}
         value={name.givenName}
-        onChange={(e) => onChangeGivenName(e.target.value)}
+        onChange={(e) => onChangeGivenName(e.target.value.trim())}
         placeholder="名前"
       />
     </div>

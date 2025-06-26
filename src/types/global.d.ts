@@ -1,5 +1,6 @@
-import { FamilyTreeSetting } from "../model/FamilyTree";
-import { PersonData } from "../model/Person";
+import { FamilyTree, FamilyTreeSetting } from "../model/FamilyTree";
+import { ProfileData } from "../model/FundamentalData";
+import { Person, PersonData } from "../model/Person";
 
 export {};
 
@@ -36,6 +37,8 @@ declare global {
       onSendSettingToSettingEditor: (
         callback: (setting: FamilyTreeSetting) => void
       ) => void;
+      onLoadDataOnProfile: (callback: (profile: ProfileData) => void) => void;
+      onOpenProfile: (profile: ProfileData) => void;
     };
   }
 }

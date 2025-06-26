@@ -47,6 +47,7 @@ div#tab > input:checked + label {
 
 div#tab > input:checked + label + div {
   display: block;
+  height: 270;
 }
 
 label#checkbox-style {

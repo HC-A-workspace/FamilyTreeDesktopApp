@@ -1,6 +1,6 @@
 import { contextBridge, ipcRenderer } from "electron";
-import { getEmptyPersonData, PersonData } from "./model/Person";
-import { FamilyTreeSetting } from "./model/FamilyTree";
+import { getEmptyPersonData, Person, PersonData } from "./model/Person";
+import { FamilyTree, FamilyTreeSetting } from "./model/FamilyTree";
 
 console.log("preloaded!");
 
@@ -63,4 +63,8 @@ contextBridge.exposeInMainWorld("electronAPI", {
     ipcRenderer.on("send-setting-to-setting-editor", (_, setting) =>
       callback(setting)
     ),
+  onOpenProfile: (personData: PersonData) =>
+    ipcRenderer.invoke("open-profile", personData),
+  onLoadDataOnProfile: (callback: (personData: PersonData) => void) =>
+    ipcRenderer.on("load-person-on-profile", (_, data) => callback(data)),
 });

@@ -138,7 +138,7 @@ export class Spot {
           result: [
             {
               field: Field.Spot,
-              text: this.data.text,
+              text: "スポット",
             },
           ],
         };

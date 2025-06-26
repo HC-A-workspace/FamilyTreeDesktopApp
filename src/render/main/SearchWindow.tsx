@@ -13,46 +13,7 @@ function displayTextOfResult(result: SearchResult) {
   const text = result.type.getText();
   const explains: string[] = [];
   for (const res of result.result) {
-    let explain = "";
-    switch (res.field) {
-      case Field.Name:
-        break;
-      case Field.Spot:
-        explain = `スポット`;
-        break;
-      case Field.Tag:
-        explain = `タグ：${res.text}`;
-        break;
-      case Field.Alias:
-        explain = `別名：${res.text}`;
-        break;
-      case Field.Bywords:
-        explain = `称号：${res.text}`;
-        break;
-      case Field.Sprouse:
-        explain = `${res.text}の配偶者`;
-        break;
-      case Field.Parent:
-        explain = `${res.text}の子`;
-        break;
-      case Field.Child:
-        explain = `${res.text}の親`;
-        break;
-      case Field.Brother:
-        explain = `${res.text}の配偶者`;
-        break;
-      case Field.Work:
-        explain = `功績：${res.text}`;
-        break;
-      case Field.Word:
-        explain = `言葉・句：${res.text}`;
-        break;
-      case Field.Desciption:
-        explain = `記述：${res.text}`;
-        break;
-      default:
-        break;
-    }
+    const explain = res.text;
     if (explains.includes(explain) === false && explain !== "") {
       explains.push(explain);
     }

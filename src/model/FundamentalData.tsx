@@ -1,4 +1,4 @@
-import { Person } from "./Person";
+import { Person, PersonData } from "./Person";
 import { Spot } from "./Spot";
 
 export const Sex = {
@@ -73,6 +73,48 @@ export interface Name {
   givenName: string;
   givenNameKana?: string;
   title?: string;
+  titleKana?: string;
+}
+
+export const NameStyle = {
+  WithFamilyname: 0,
+  WithTitle: 1,
+  OnlyGivenName: 2,
+} as const;
+
+export type NameStyle = (typeof NameStyle)[keyof typeof NameStyle];
+
+export function getNameStyle(name: Name): NameStyle {
+  if (name.familyName !== undefined && name.familyName !== "") {
+    return NameStyle.WithFamilyname;
+  }
+  if (name.title !== undefined && name.title !== "") {
+    return NameStyle.WithTitle;
+  }
+  return NameStyle.OnlyGivenName;
+}
+
+export interface ProfileData {
+  person: PersonData;
+  parents: PersonData[];
+  adoptedParents: PersonData[];
+  brothers: PersonData[];
+  marriages: {
+    sprouse?: PersonData;
+    children: {
+      isAdopted: boolean;
+      child: PersonData;
+    }[];
+  }[];
+  deathText: string;
+}
+
+export function isAllHalfWidth(str: string): boolean {
+  return /^[\x00-\x7F]*$/.test(str);
+}
+
+export function getPlainText(str: string) {
+  return str.replace(/\[([^\(\)\[\]]+)\([^\(\)\[\]]+\)\]/g, (_, a) => a);
 }
 
 export interface FontData {

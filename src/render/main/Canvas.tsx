@@ -784,7 +784,9 @@ const App: React.FC = () => {
           }}
           onShowPerson={() => {
             if (selectedPerson.current !== undefined) {
-              window.electronAPI?.onOpenEditor(selectedPerson.current.raw());
+              window.electronAPI?.onOpenProfile(
+                familyTree.getProfileData(selectedPerson.current)
+              );
             }
           }}
           onFixVertically={() => {

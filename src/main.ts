@@ -1,17 +1,20 @@
 import path from "node:path";
 import fs from "fs";
 import { BrowserWindow, Menu, app, dialog, ipcMain } from "electron";
-import { PersonData } from "./model/Person";
-import { FamilyTreeSetting } from "./model/FamilyTree";
+import { Person, PersonData } from "./model/Person";
+import { FamilyTree, FamilyTreeSetting } from "./model/FamilyTree";
+import { ProfileData } from "./model/FundamentalData";
 
 app.whenReady().then(() => {
   const mainWindow = new BrowserWindow({
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
     },
+    width: 1200,
+    height: 900,
   });
 
-  mainWindow.webContents.openDevTools();
+  // mainWindow.webContents.openDevTools();
 
   const menu = Menu.buildFromTemplate([
     {
@@ -204,7 +207,7 @@ app.whenReady().then(() => {
         preload: path.join(__dirname, "preload.js"),
       },
       width: 350,
-      height: 590,
+      height: 480,
     });
     settingEditorWindow.loadFile(path.join(__dirname, "../dist/index.html"), {
       hash: "/settingEditor",
@@ -221,6 +224,24 @@ app.whenReady().then(() => {
 
   ipcMain.on("send-setting-from-editor", (_, setting: FamilyTreeSetting) => {
     mainWindow.webContents.send("send-setting-to-main", setting);
+  });
+
+  ipcMain.handle("open-profile", (_, profile: ProfileData) => {
+    const profileWindow = new BrowserWindow({
+      webPreferences: {
+        preload: path.join(__dirname, "preload.js"),
+      },
+      width: 600,
+      height: 700,
+    });
+    // profileWindow.webContents.openDevTools();
+    profileWindow.loadFile(path.join(__dirname, "../dist/index.html"), {
+      hash: "/profile",
+    });
+    profileWindow.webContents.once("did-finish-load", () => {
+      profileWindow.webContents.send("load-person-on-profile", profile);
+    });
+    profileWindow.setMenu(null);
   });
 
   ipcMain.handle("close-editor", (e) => {

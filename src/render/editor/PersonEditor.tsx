@@ -1,30 +1,17 @@
 import { useEffect, useState } from "react";
 import { getEmptyPersonData, type PersonData } from "../../model/Person";
-import { Sex, type Name } from "../../model/FundamentalData";
+import {
+  getNameStyle,
+  NameStyle,
+  Sex,
+  type Name,
+} from "../../model/FundamentalData";
 import {
   OnlyNameInput,
   WithFamilyNameInput,
   WithTitleInput,
 } from "./NameEditor";
 import ListEditor from "./ListEditor";
-
-const NameStyle = {
-  WithFamilyname: 0,
-  WithTitle: 1,
-  OnlyGivenName: 2,
-} as const;
-
-type NameStyle = (typeof NameStyle)[keyof typeof NameStyle];
-
-function getNameStyle(name: Name): NameStyle {
-  if (name.familyName !== undefined && name.familyName !== "") {
-    return NameStyle.WithFamilyname;
-  }
-  if (name.title !== undefined && name.title !== "") {
-    return NameStyle.WithTitle;
-  }
-  return NameStyle.OnlyGivenName;
-}
 
 const EditingDate = {
   Year: 0,
@@ -160,6 +147,12 @@ const PersonEditor: React.FC = () => {
     setPersonData({
       ...personData,
       name: { ...personData.name, title: nameTitle },
+    });
+  };
+  const handleChangeNameTitleKana = (nameTitleKana: string) => {
+    setPersonData({
+      ...personData,
+      name: { ...personData.name, titleKana: nameTitleKana },
     });
   };
 
@@ -369,6 +362,7 @@ const PersonEditor: React.FC = () => {
                 onChangeGivenName={handleChangeGivenName}
                 onChangeGivenNameKana={handleChangeGivenNameKana}
                 onChangeNameTitle={handleChangeNameTitle}
+                onChangeNameTitleKana={handleChangeNameTitleKana}
               />
             )}
             {nameStyle === NameStyle.OnlyGivenName && (
@@ -430,7 +424,7 @@ const PersonEditor: React.FC = () => {
           top={0}
         />
         <div style={{ display: "flex" }}>
-          <ItemTitle title="生誕" titleWidth={titleWidth} top={10} />
+          <ItemTitle title="誕生" titleWidth={titleWidth} top={10} />
           <div style={{ display: "flex", width: width - titleWidth }}>
             <div style={{ padding: 3, marginLeft: 10 }}>
               <label
@@ -519,7 +513,7 @@ const PersonEditor: React.FC = () => {
           </div>
         </div>
         <div style={{ display: "flex" }}>
-          <ItemTitle title="死没" titleWidth={titleWidth} top={10} />
+          <ItemTitle title="逝去" titleWidth={titleWidth} top={10} />
           <div style={{ display: "flex", width: width - titleWidth }}>
             <div style={{ padding: 3, marginLeft: 10 }}>
               <label
@@ -619,7 +613,7 @@ const PersonEditor: React.FC = () => {
               onChange={(e) =>
                 setPersonData({
                   ...personData,
-                  bywords: e.target.value,
+                  bywords: e.target.value.trim(),
                 })
               }
             />
@@ -640,7 +634,7 @@ const PersonEditor: React.FC = () => {
               }
               onChange={(idx, newText) => {
                 const newAliases = [...personData.aliases];
-                newAliases[idx] = newText;
+                newAliases[idx] = newText.trim();
                 setPersonData({
                   ...personData,
                   aliases: newAliases,
@@ -665,12 +659,12 @@ const PersonEditor: React.FC = () => {
         </div>
         <hr style={{ width: width * 0.95, color: "rgb(0,0,0)" }} />
         <div style={{ display: "flex" }}>
-          <ItemTitle title="業績" titleWidth={titleWidth} top={2} />
+          <ItemTitle title="功績" titleWidth={titleWidth} top={2} />
           <div style={{ display: "flex", width: width - titleWidth }}>
             <ListEditor
               list={personData.works}
               width={width - titleWidth}
-              placeholder="業績"
+              placeholder="功績"
               onAdd={() =>
                 setPersonData({
                   ...personData,

@@ -32,8 +32,8 @@ const PersonEditor: React.FC = () => {
     window.electronAPI?.onLoadDataOnEditor((data) => {
       setPersonData(data.personData);
       setTagList([...data.tags]);
-      if (personData.name.givenName !== "") {
-        setNameStyle(getNameStyle(personData.name));
+      if (data.personData.name.givenName !== "") {
+        setNameStyle(getNameStyle(data.personData.name));
       } else {
         setNameStyle(NameStyle.WithFamilyname);
       }

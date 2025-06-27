@@ -108,7 +108,7 @@ export const WithTitleInput: React.FC<WithTitleProps> = ({
           <input
             type="text"
             id="kana"
-            value={name.familyNameKana ?? ""}
+            value={name.titleKana ?? ""}
             onChange={(e) => onChangeNameTitleKana(e.target.value.trim())}
             placeholder="たちば"
           />
@@ -117,7 +117,7 @@ export const WithTitleInput: React.FC<WithTitleProps> = ({
           <input
             type="text"
             id="mana"
-            value={name.familyName ?? ""}
+            value={name.title ?? ""}
             onChange={(e) => onChangeNameTitle(e.target.value.trim())}
             placeholder="立場"
           />

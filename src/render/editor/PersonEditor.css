@@ -1,0 +1,213 @@
+.back-ground {
+  position: relative;
+  background-color: rgba(243, 152, 77, 0.12);
+  font-size: large;
+}
+
+#region-title {
+  width: 20%;
+  margin-right: auto;
+  margin-bottom: 1em;
+  margin-top: 0.5em;
+}
+
+#region-title > div {
+  font-size: 1.5em;
+  text-align: center;
+  font-weight: bold;
+}
+
+#edit-field {
+  display: flex;
+  margin: 0.7em 0;
+}
+
+#edit-field > #title {
+  min-width: 20%;
+  justify-items: center;
+}
+
+#edit-field > #title > div {
+  border: 1px solid black;
+  background-color: white;
+  width: fit-content;
+  font-size: 1.1em;
+  padding: 0.2em 0.3em;
+  font-weight: bold;
+}
+
+#edit-field > #content {
+  align-items: left;
+  width: 75%;
+}
+
+#content > #checkbox-style {
+  border: 1px solid black;
+  background-color: white;
+  font-weight: normal;
+  padding: 0.2em 0.3em;
+  width: fit-content;
+}
+
+input#kana {
+  width: 90%;
+  font-size: 0.8em;
+  margin-bottom: 0.5em;
+  border: 1px solid black;
+}
+
+input#mana {
+  width: 90%;
+  font-size: 1.5em;
+  border: 1px solid black;
+}
+
+div#edit-name-container {
+  display: flex;
+}
+
+hr#editor-hr {
+  border: 1px solid rgb(161, 161, 161);
+  padding: 0;
+  margin: 0;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+#edit-year-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+}
+
+#edit-year-container > label {
+  background-color: white;
+  border: 1px solid black;
+  padding: 0.2em 0.3em;
+  height: fit-content;
+}
+
+#edit-year-container > #year {
+  text-align: right;
+  width: 3.5em;
+  font-size: 1.2em;
+  padding: 0.2em 0;
+  border: 1px solid black;
+}
+
+#edit-year-container > #month-day {
+  text-align: right;
+  width: 2em;
+  font-size: 1.2em;
+  padding: 0.2em 0;
+  border: 1px solid black;
+}
+
+#edit-year-container > #slash {
+  font-size: 1.5em;
+}
+
+.bywords-editor {
+  font-size: 1.2em;
+  width: 12em;
+  border: 1px solid black;
+  padding: 0.3em;
+}
+
+.description-editor {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1em;
+}
+
+.description-editor > textarea {
+  width: 90%;
+  height: 10em;
+  resize: vertical;
+  font-size: 1.1em;
+  padding: 0.3em;
+  border: 1px solid black;
+}
+
+#edit-field > #list-container {
+  width: 75%;
+}
+
+#list-input {
+  display: flex;
+  align-items: center;
+  gap: 1em;
+  margin-bottom: 0.5em;
+}
+
+#list-input > input {
+  flex: 1;
+  font-size: 1.1em;
+  border: 1px solid black;
+  padding: 0.2em;
+}
+
+#list-input > button {
+  width: fit-content;
+  font-size: 1em;
+  border: 1px solid black;
+  background-color: white;
+}
+
+button#list-add-button {
+  width: fit-content;
+  font-size: 1em;
+  border: 1px solid black;
+  background-color: white;
+}
+
+.tag-editor {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4em;
+}
+
+#tag-checkbox {
+  display: none;
+}
+
+.tag-editor > label {
+  border: 1px solid black;
+  border-radius: 10px;
+  padding: 0em 0.3em;
+  width: fit-content;
+  height: fit-content;
+}
+
+.add-tag {
+  display: flex;
+  gap: 0.1em;
+  align-items: center;
+  background-color: white;
+  border: 1px solid black;
+}
+
+.add-tag > input {
+  border: none;
+  width: 5em;
+}
+
+.add-tag > input:focus {
+  outline: none;
+}
+
+.editor-last-button-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10%;
+}
+
+.editor-last-button-container > button {
+  font-size: 1.1em;
+  width: 6em;
+  padding: 0.3em 0.1em;
+  background-color: white;
+  border: 1px solid black;
+  margin: 0.5em;
+}

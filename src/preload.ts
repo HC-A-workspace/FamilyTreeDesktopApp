@@ -15,21 +15,18 @@ contextBridge.exposeInMainWorld("electronAPI", {
     ipcRenderer.on("load-and-add-data", (_, [path, content]) =>
       callback(path, content)
     ),
-  onOpenEditor: (personData: PersonData) =>
-    ipcRenderer.invoke("open-editor", personData),
-  onLoadName: (callback: (name: string) => void) =>
-    ipcRenderer.on("editor-person", (_, name) => callback(name)),
-  onLoadDataOnEditor: (callback: (personData: PersonData) => void) =>
-    ipcRenderer.on("load-person-on-editor", (_, personData) =>
-      callback(personData)
-    ),
+  onOpenEditor: (data: { personData: PersonData; tags: string[] }) =>
+    ipcRenderer.invoke("open-editor", data),
+
+  onLoadDataOnEditor: (
+    callback: (data: { personData: PersonData; tags: string[] }) => void
+  ) => ipcRenderer.on("load-person-on-editor", (_, data) => callback(data)),
   onEditorClose: () => ipcRenderer.invoke("close-editor"),
-  onSendDataFromEditor: (personData: PersonData) =>
-    ipcRenderer.send("send-persondata-from-editor", personData),
-  onSendDataToMain: (callback: (personData: PersonData) => void) =>
-    ipcRenderer.on("send-persondata-to-main", (_, personData) =>
-      callback(personData)
-    ),
+  onSendDataFromEditor: (data: { personData: PersonData; tags: string[] }) =>
+    ipcRenderer.send("send-persondata-from-editor", data),
+  onSendDataToMain: (
+    callback: (data: { personData: PersonData; tags: string[] }) => void
+  ) => ipcRenderer.on("send-persondata-to-main", (_, data) => callback(data)),
   onSaveFamilyTree: (callback: () => void) =>
     ipcRenderer.on("save-familyTree", (_) => callback()),
   onUndo: (callback: () => void) => ipcRenderer.on("undo", (_) => callback()),

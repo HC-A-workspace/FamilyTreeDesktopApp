@@ -1,5 +1,5 @@
 import { FamilyTree, FamilyTreeSetting } from "../model/FamilyTree";
-import { ProfileData } from "../model/FundamentalData";
+import { ProfileData, TagData } from "../model/FundamentalData";
 import { Person, PersonData } from "../model/Person";
 
 export {};
@@ -11,11 +11,18 @@ declare global {
       onLoadAndAddData: (
         callback: (path: string, content: string) => void
       ) => void;
-      onOpenEditor: (personData: PersonData) => void;
-      onLoadDataOnEditor: (callback: (personData: PersonData) => void) => void;
+      onOpenEditor: (data: { personData: PersonData; tags: string[] }) => void;
+      onLoadDataOnEditor: (
+        callback: (data: { personData: PersonData; tags: string[] }) => void
+      ) => void;
       onEditorClose: () => void;
-      onSendDataFromEditor: (personData: PersonData) => void;
-      onSendDataToMain: (callback: (personData: PersonData) => void) => void;
+      onSendDataFromEditor: (data: {
+        personData: PersonData;
+        newTags: string[];
+      }) => void;
+      onSendDataToMain: (
+        callback: (data: { personData: PersonData; newTags: string[] }) => void
+      ) => void;
       onSaveFamilyTree: (callback: () => void) => void;
       onUndo: (callback: () => void) => void;
       onRedo: (callback: () => void) => void;

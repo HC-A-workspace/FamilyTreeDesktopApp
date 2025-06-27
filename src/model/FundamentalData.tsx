@@ -107,6 +107,7 @@ export interface ProfileData {
     }[];
   }[];
   deathText: string;
+  tags: string[];
 }
 
 export function isAllHalfWidth(str: string): boolean {

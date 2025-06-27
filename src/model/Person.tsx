@@ -690,6 +690,15 @@ export class Person {
         text: "",
       };
     }
+    for (const id of this.data.tagIds) {
+      const tag = familyTree.getTags()[id];
+      if (tag.includes(text)) {
+        return {
+          field: Field.Tag,
+          text: `タグ:${tag}`,
+        };
+      }
+    }
     for (const alias of this.data.aliases) {
       const plainAlias = getPlainText(alias);
       if (plainAlias.includes(text)) {
@@ -939,9 +948,16 @@ export class Person {
       const plainWork = getPlainText(work);
       const idx = plainWork.indexOf(text);
       if (idx !== -1) {
+        const additional = 3;
+        const prefix = idx - additional > 0 ? "..." : "";
+        const postfix =
+          idx + text.length + additional !== plainWork.length - 1 ? "..." : "";
         return {
           field: Field.Work,
-          text: `功績：${plainWork.slice(idx, idx + text.length + 3)}`,
+          text: `功績：${prefix}${plainWork.slice(
+            Math.max(idx - additional, 0),
+            idx + text.length + 3
+          )}${postfix}`,
         };
       }
     }
@@ -949,9 +965,16 @@ export class Person {
       const plainWord = getPlainText(word);
       const idx = plainWord.indexOf(text);
       if (idx !== -1) {
+        const additional = 3;
+        const prefix = idx - additional > 0 ? "..." : "";
+        const postfix =
+          idx + text.length + additional !== plainWord.length - 1 ? "..." : "";
         return {
-          field: Field.Word,
-          text: `言葉・句：${plainWord.slice(idx, idx + text.length + 3)}`,
+          field: Field.Desciption,
+          text: `言葉・句${prefix}${plainWord.slice(
+            Math.max(idx - additional, 0),
+            idx + text.length + 3
+          )}${postfix}`,
         };
       }
     }

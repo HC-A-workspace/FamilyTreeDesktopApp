@@ -25,6 +25,7 @@
 
 .result > li {
   padding: 0.2em;
+  cursor: pointer;
 }
 
 .result > li:not(:last-child) {

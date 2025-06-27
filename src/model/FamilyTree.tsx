@@ -178,6 +178,7 @@ export class FamilyTree extends Setting {
   private personMap: Map<number, Person>;
   private marriageMap: Map<number, Marriage>;
   private spotList: Map<number, Spot>;
+  private tagList: string[];
   private title: string = "家系図";
   private nextPersonId: number = 0;
   private nextMarriageId: number = 0;
@@ -192,18 +193,21 @@ export class FamilyTree extends Setting {
     people: Person[],
     marriage: Marriage[],
     spots: Spot[],
+    tags: string[],
     setting: FamilyTreeSetting
   );
   constructor(
     peopleData: PersonData[],
     marriagesData: MarriageData[],
     spotData: SpotData[],
+    tags: string[],
     setting: FamilyTreeSetting
   );
   constructor(
     people: Person[] | PersonData[],
     marriages: Marriage[] | MarriageData[],
     spots: Spot[] | SpotData[],
+    tags: string[],
     setting: FamilyTreeSetting
   ) {
     super(setting);
@@ -253,6 +257,8 @@ export class FamilyTree extends Setting {
           : (spots as SpotData[]).map((spot) => [spot.id, new Spot(spot)])
     );
 
+    this.tagList = [...tags];
+
     this.nextPersonId = people.length;
     this.nextMarriageId = marriages.length;
     this.nextSpotId = spots.length;
@@ -285,6 +291,10 @@ export class FamilyTree extends Setting {
       FamilyTree.setting.isVertical = isVertical;
       this.personStyleUpdate();
     }
+  }
+
+  getTags() {
+    return this.tagList;
   }
 
   getNextPersonId() {
@@ -625,6 +635,7 @@ export class FamilyTree extends Setting {
         (m) => [m[0], m[1].clone()] as [number, Spot]
       )
     );
+    this.tagList = [...familyTree.tagList];
     this.title = familyTree.title;
     this.nextPersonId = familyTree.nextPersonId;
     this.nextMarriageId = familyTree.nextMarriageId;
@@ -1190,6 +1201,11 @@ export class FamilyTree extends Setting {
         }
       }),
       deathText: deathText,
+      tags: person.raw().tagIds.map((id) => this.tagList[id]),
     };
+  }
+
+  addTags(...tags: string[]) {
+    this.tagList.push(...tags);
   }
 }

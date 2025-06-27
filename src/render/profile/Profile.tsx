@@ -91,6 +91,7 @@ const Profile: React.FC = () => {
         />
         <ShortTextsViewer texts={profile.person.works} title="功績" />
         <ShortTextsViewer texts={profile.person.words} title="言葉・句" />
+        <TagViewer tags={profile.tags} />
         <DescriptionViewer texts={profile.person.description} />
       </div>
     );
@@ -111,7 +112,6 @@ const NameViewer: React.FC<{ name: Name }> = ({ name }) => {
             {name.givenName}
             <rt>{name.givenNameKana}</rt>
           </ruby>
-          あ
         </div>
       );
     case NameStyle.WithFamilyname:
@@ -436,6 +436,24 @@ const DescriptionViewer: React.FC<{ texts: string }> = ({ texts }) => {
           </p>
         );
       })}
+    </div>
+  );
+};
+
+const TagViewer: React.FC<{ tags: string[] }> = ({ tags }) => {
+  if (tags.length === 0) {
+    return;
+  }
+  return (
+    <div>
+      <div id="item">
+        <div id="field">タグ</div>
+        <div id="container">
+          {tags.map((tag, id) => {
+            return <div key={id}>{tag}</div>;
+          })}
+        </div>
+      </div>
     </div>
   );
 };

@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useState } from "react";
 import { FamilyTree, FamilyTreeSetting } from "../../model/FamilyTree";
 import { drawFamilyTree } from "./DrawFamilyTree";
-import { type Position } from "../../model/FundamentalData";
+import { TagData, type Position } from "../../model/FundamentalData";
 import {
   getEmptyPersonData,
   Person,
@@ -85,7 +85,7 @@ const Title: React.FC<TitleProps> = ({ margin, title, setTitle }) => {
 const App: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [familyTree] = useState<FamilyTree>(
-    new FamilyTree([], [], [], FamilyTree.setting)
+    new FamilyTree([], [], [], [], FamilyTree.setting)
   );
   const [title, setTitle] = useState<string>("家系図");
 
@@ -93,7 +93,7 @@ const App: React.FC = () => {
     new UndoRedoList<FamilyTree>(
       100,
       () => {
-        return new FamilyTree([], [], [], FamilyTree.setting);
+        return new FamilyTree([], [], [], [], FamilyTree.setting);
       },
       (oldState: FamilyTree, newState: FamilyTree) => {
         oldState.load(newState, FamilyTree.setting);
@@ -154,21 +154,24 @@ const App: React.FC = () => {
     window.electronAPI?.onLoadAndAddData((path, content) => {
       loadFile(path, content, false);
     });
-    window.electronAPI?.onSendDataToMain((personData: PersonData) => {
-      Person.formatData(personData);
+    window.electronAPI?.onSendDataToMain((data) => {
+      Person.formatData(data.personData);
       if (
-        personData.id === -1 ||
-        familyTree.findPersonById(personData.id) === undefined
+        data.personData.id === -1 ||
+        familyTree.findPersonById(data.personData.id) === undefined
       ) {
-        personData.id = familyTree.getNextPersonId();
-        familyTree.getPersonMap().set(personData.id, new Person(personData));
+        data.personData.id = familyTree.getNextPersonId();
+        familyTree
+          .getPersonMap()
+          .set(data.personData.id, new Person(data.personData));
         familyTree.nextPersonIdCountUp();
       } else {
-        const targetPerson = familyTree.findPersonById(personData.id);
+        const targetPerson = familyTree.findPersonById(data.personData.id);
         if (targetPerson !== undefined) {
-          targetPerson.update(personData);
+          targetPerson.update(data.personData);
         }
       }
+      familyTree.addTags(...data.newTags);
       save();
       forceUpdate();
     });
@@ -300,12 +303,14 @@ const App: React.FC = () => {
     const personData: PersonData[] = data.personData;
     const marriageData: MarriageData[] = data.marriageData;
     const spotData: SpotData[] = data.spotData;
+    const tagData: string[] = data.tagData;
     const setting: FamilyTreeSetting = data.familyTreeSetting;
 
     const newFamilyTree = new FamilyTree(
       personData,
       marriageData,
       spotData,
+      tagData,
       setting
     );
 
@@ -602,7 +607,10 @@ const App: React.FC = () => {
       ? { x: canvasWidth() / 2, y: canvasHeight() / 2 }
       : menuPosition;
     const unscaledPos = unscaledPosition(pos, offset, scale);
-    window.electronAPI?.onOpenEditor(getEmptyPersonData(-1, unscaledPos));
+    window.electronAPI?.onOpenEditor({
+      personData: getEmptyPersonData(-1, unscaledPos),
+      tags: familyTree.getTags(),
+    });
   };
 
   const editiongSpotData = useRef<SpotData | undefined>(undefined);
@@ -779,7 +787,10 @@ const App: React.FC = () => {
           onSetState={(state) => setState(state)}
           onEditPerson={() => {
             if (selectedPerson.current !== undefined) {
-              window.electronAPI?.onOpenEditor(selectedPerson.current.raw());
+              window.electronAPI?.onOpenEditor({
+                personData: selectedPerson.current.raw(),
+                tags: familyTree.getTags(),
+              });
             }
           }}
           onShowPerson={() => {

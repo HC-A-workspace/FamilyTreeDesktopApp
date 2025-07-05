@@ -35,7 +35,7 @@ app.whenReady().then(() => {
             return dialog
               .showOpenDialog(mainWindow, {
                 properties: ["openFile"],
-                filters: [{ name: "data", extensions: ["json", "txt"] }],
+                filters: [{ name: "data", extensions: ["json"] }],
               })
               .then((result) => {
                 if (result.canceled || result.filePaths.length === 0) return;
@@ -55,7 +55,7 @@ app.whenReady().then(() => {
             return dialog
               .showOpenDialog(mainWindow, {
                 properties: ["openFile"],
-                filters: [{ name: "data", extensions: ["json", "txt"] }],
+                filters: [{ name: "data", extensions: ["json"] }],
               })
               .then((result) => {
                 if (result.canceled || result.filePaths.length === 0) return;

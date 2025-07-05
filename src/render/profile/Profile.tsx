@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import "./Profile.css";
 import {
   Date,
+  EventData,
   getNameStyle,
   isAllHalfWidth,
   Name,
@@ -89,8 +90,9 @@ const Profile: React.FC = () => {
           families={profile.marriages}
           familyName={profile.person.name.familyName}
         />
-        <ShortTextsViewer texts={profile.person.works} title="功績" />
+        <ShortTextsViewer texts={profile.person.achievements} title="業績" />
         <ShortTextsViewer texts={profile.person.words} title="言葉・句" />
+        <ChronologicalsViewer chronologicals={profile.person.chronologicals} />
         <TagViewer tags={profile.tags} />
         <DescriptionViewer texts={profile.person.description} />
       </div>
@@ -190,11 +192,11 @@ const YearViewer: React.FC<{
 }> = ({ birth, death, deathText }) => {
   const toString = (date: Date) => {
     let str = "";
-    if (date.isBC) {
+    if (date.year && date.year < 0) {
       str += "紀元前 ";
     }
     if (date.year) {
-      str += `${date.year} 年`;
+      str += `${Math.abs(date.year)} 年`;
     }
     if (date.month) {
       str += ` ${date.month} 月`;
@@ -393,6 +395,42 @@ const FamilyViewer: React.FC<{
   }
 };
 
+const ChronologicalsViewer: React.FC<{
+  chronologicals: EventData[];
+}> = ({ chronologicals }) => {
+  if (chronologicals.length === 0) {
+    return;
+  }
+  const showDate = chronologicals.some((c) => c.date !== undefined);
+
+  return (
+    <div id="item">
+      <div id="field">略年表</div>
+      <div>
+        {chronologicals.map((event, id) => {
+          let date = "";
+          if (event.date?.year) {
+            date += event.date.year < 0 ? "紀元前" : "";
+            date += `${Math.abs(event.date.year)}年`;
+          }
+          if (event.date?.month) {
+            date += ` ${event.date.month}月`;
+          }
+          if (event.date?.day) {
+            date += ` ${event.date.day}日`;
+          }
+          return (
+            <div key={id} id="list">
+              {showDate && <div style={{ whiteSpace: "nowrap" }}>{date}</div>}
+              <div id="container">{parseRubyText(event.text)}</div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
 const ShortTextsViewer: React.FC<{ texts: string[]; title: string }> = ({
   texts,
   title,
@@ -428,7 +466,7 @@ const DescriptionViewer: React.FC<{ texts: string }> = ({ texts }) => {
   }
   const splited = texts.split(/\r\n|\n|\r/g);
   return (
-    <div>
+    <div style={{ marginTop: "2em", marginBottom: "2em" }}>
       {splited.map((text, id) => {
         return (
           <p key={id} id="paragraph">

@@ -9,6 +9,7 @@ export function saveFamilyTree(familyTree: FamilyTree) {
     personData: familyTree.getPersonData(),
     marriageData: familyTree.getMarriageData(),
     spotData: familyTree.getSpotData(),
+    tagData: familyTree.getTags(),
     familyTreeSetting: FamilyTree.setting,
   };
 

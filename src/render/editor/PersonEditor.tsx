@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getEmptyPersonData, type PersonData } from "../../model/Person";
+import { getEmptyPersonData } from "../../model/Person";
 import { getNameStyle, NameStyle, Sex } from "../../model/FundamentalData";
 import {
   OnlyNameInput,
@@ -8,6 +8,7 @@ import {
 } from "./NameEditor";
 import ListEditor from "./ListEditor";
 import "./PersonEditor.css";
+import EventEditor from "./EventEditor";
 
 const EditingDate = {
   Year: 0,
@@ -100,12 +101,8 @@ const PersonEditor: React.FC = () => {
             ...personData,
             birthday: {
               ...personData.birthday,
-              isBC:
-                personData.birthday?.isBC !== undefined
-                  ? personData.birthday?.isBC
-                  : false,
               year:
-                value === "" || Number(value) < 0 ? undefined : Number(value),
+                value === "" || Number(value) === 0 ? undefined : Number(value),
             },
           });
         } else {
@@ -113,12 +110,8 @@ const PersonEditor: React.FC = () => {
             ...personData,
             deathday: {
               ...personData.deathday,
-              isBC:
-                personData.deathday?.isBC !== undefined
-                  ? personData.deathday?.isBC
-                  : false,
               year:
-                value === "" || Number(value) < 0 ? undefined : Number(value),
+                value === "" || Number(value) === 0 ? undefined : Number(value),
             },
           });
         }
@@ -129,10 +122,6 @@ const PersonEditor: React.FC = () => {
             ...personData,
             birthday: {
               ...personData.birthday,
-              isBC:
-                personData.birthday?.isBC !== undefined
-                  ? personData.birthday?.isBC
-                  : false,
               month:
                 value === "" || Number(value) < 1 || Number(value) > 12
                   ? undefined
@@ -144,10 +133,6 @@ const PersonEditor: React.FC = () => {
             ...personData,
             deathday: {
               ...personData.deathday,
-              isBC:
-                personData.deathday?.isBC !== undefined
-                  ? personData.deathday?.isBC
-                  : false,
               month:
                 value === "" || Number(value) < 1 || Number(value) > 12
                   ? undefined
@@ -162,10 +147,6 @@ const PersonEditor: React.FC = () => {
             ...personData,
             birthday: {
               ...personData.birthday,
-              isBC:
-                personData.birthday?.isBC !== undefined
-                  ? personData.birthday?.isBC
-                  : false,
               day:
                 value === "" || Number(value) < 1 || Number(value) > 31
                   ? undefined
@@ -177,10 +158,6 @@ const PersonEditor: React.FC = () => {
             ...personData,
             deathday: {
               ...personData.deathday,
-              isBC:
-                personData.deathday?.isBC !== undefined
-                  ? personData.deathday?.isBC
-                  : false,
               day:
                 value === "" || Number(value) < 1 || Number(value) > 31
                   ? undefined
@@ -207,7 +184,7 @@ const PersonEditor: React.FC = () => {
           <div id="checkbox-style">
             <label style={{ marginRight: 5 }}>
               <input
-                type="checkbox"
+                type="radio"
                 checked={nameStyle === NameStyle.WithFamilyname}
                 onChange={() => setNameStyle(NameStyle.WithFamilyname)}
               />
@@ -215,7 +192,7 @@ const PersonEditor: React.FC = () => {
             </label>
             <label style={{ marginRight: 5 }}>
               <input
-                type="checkbox"
+                type="radio"
                 checked={nameStyle === NameStyle.WithTitle}
                 onChange={() => setNameStyle(NameStyle.WithTitle)}
               />
@@ -223,7 +200,7 @@ const PersonEditor: React.FC = () => {
             </label>
             <label style={{ marginRight: 5 }}>
               <input
-                type="checkbox"
+                type="radio"
                 checked={nameStyle === NameStyle.OnlyGivenName}
                 onChange={() => setNameStyle(NameStyle.OnlyGivenName)}
               />
@@ -272,7 +249,7 @@ const PersonEditor: React.FC = () => {
           <div id="checkbox-style">
             <label style={{ marginRight: 5 }}>
               <input
-                type="checkbox"
+                type="radio"
                 checked={personData.sex === Sex.Male}
                 onChange={() => handleChangeSex(Sex.Male)}
               />
@@ -280,7 +257,7 @@ const PersonEditor: React.FC = () => {
             </label>
             <label style={{ marginRight: 5 }}>
               <input
-                type="checkbox"
+                type="radio"
                 checked={personData.sex === Sex.Female}
                 onChange={() => handleChangeSex(Sex.Female)}
               />
@@ -288,7 +265,7 @@ const PersonEditor: React.FC = () => {
             </label>
             <label style={{ marginRight: 5 }}>
               <input
-                type="checkbox"
+                type="radio"
                 checked={personData.sex === Sex.Other}
                 onChange={() => handleChangeSex(Sex.Other)}
               />
@@ -307,7 +284,7 @@ const PersonEditor: React.FC = () => {
         </div>
         <div id="content">
           <div id="edit-year-container">
-            <label>
+            {/* <label>
               <input
                 type="checkbox"
                 checked={
@@ -324,10 +301,9 @@ const PersonEditor: React.FC = () => {
                 }
               />
               紀元前
-            </label>
+            </label> */}
             <input
               type="number"
-              min={0}
               id="year"
               value={personData.birthday?.year ?? ""}
               placeholder="年"
@@ -339,6 +315,7 @@ const PersonEditor: React.FC = () => {
             <input
               type="number"
               min={0}
+              max={12}
               id="month-day"
               value={personData.birthday?.month ?? ""}
               placeholder="月"
@@ -350,6 +327,7 @@ const PersonEditor: React.FC = () => {
             <input
               type="number"
               min={0}
+              max={31}
               id="month-day"
               value={personData.birthday?.day ?? ""}
               placeholder="日"
@@ -366,7 +344,7 @@ const PersonEditor: React.FC = () => {
         </div>
         <div id="content">
           <div id="edit-year-container">
-            <label>
+            {/* <label>
               <input
                 type="checkbox"
                 checked={
@@ -383,10 +361,9 @@ const PersonEditor: React.FC = () => {
                 }
               />
               紀元前
-            </label>
+            </label> */}
             <input
               type="number"
-              min={0}
               id="year"
               value={personData.deathday?.year ?? ""}
               placeholder="年"
@@ -398,6 +375,7 @@ const PersonEditor: React.FC = () => {
             <input
               type="number"
               min={0}
+              max={12}
               id="month-day"
               value={personData.deathday?.month ?? ""}
               placeholder="月"
@@ -409,6 +387,7 @@ const PersonEditor: React.FC = () => {
             <input
               type="number"
               min={0}
+              max={31}
               id="month-day"
               value={personData.deathday?.day ?? ""}
               placeholder="日"
@@ -481,28 +460,28 @@ const PersonEditor: React.FC = () => {
       <hr id="editor-hr" />
       <div id="edit-field" style={{ alignItems: "flex-start" }}>
         <div id="title">
-          <div>功績</div>
+          <div>業績</div>
         </div>
         <div id="list-container">
           <ListEditor
-            list={personData.works}
-            placeholder="功績"
+            list={personData.achievements}
+            placeholder="業績"
             onAdd={() =>
               setPersonData({
                 ...personData,
-                works: [...personData.works, ""],
+                achievements: [...personData.achievements, ""],
               })
             }
             onChange={(idx, newText) => {
-              const newWorks = [...personData.works];
+              const newWorks = [...personData.achievements];
               newWorks[idx] = newText;
               setPersonData({
                 ...personData,
-                works: newWorks,
+                achievements: newWorks,
               });
             }}
             onDelete={(idx) => {
-              const newWorks = [...personData.works];
+              const newWorks = [...personData.achievements];
               if (newWorks.length === 0) {
                 return;
               } else if (newWorks.length === 1) {
@@ -512,7 +491,7 @@ const PersonEditor: React.FC = () => {
               }
               setPersonData({
                 ...personData,
-                works: newWorks,
+                achievements: newWorks,
               });
             }}
           />
@@ -560,6 +539,72 @@ const PersonEditor: React.FC = () => {
       <hr id="editor-hr" />
       <div id="edit-field" style={{ alignItems: "flex-start" }}>
         <div id="title">
+          <div>略年表</div>
+        </div>
+        <div id="list-container">
+          <EventEditor
+            events={personData.chronologicals}
+            onAdd={() =>
+              setPersonData({
+                ...personData,
+                chronologicals: [
+                  ...personData.chronologicals,
+                  {
+                    text: "",
+                  },
+                ],
+              })
+            }
+            onChange={(idx, newEvent) => {
+              const newEvents = [...personData.chronologicals];
+              newEvents[idx] = newEvent;
+              setPersonData({
+                ...personData,
+                chronologicals: newEvents,
+              });
+            }}
+            onDelete={(idx) => {
+              const newEvents = [...personData.chronologicals];
+              if (newEvents.length === 0) {
+                return;
+              } else if (newEvents.length === 1) {
+                newEvents[0] = { text: "" };
+              } else {
+                newEvents.splice(idx, 1);
+              }
+              setPersonData({
+                ...personData,
+                chronologicals: newEvents,
+              });
+            }}
+            onMoveUp={(idx) => {
+              if (idx === 0) return;
+              const newEvents = [...personData.chronologicals];
+              const temp = newEvents[idx - 1];
+              newEvents[idx - 1] = newEvents[idx];
+              newEvents[idx] = temp;
+              setPersonData({
+                ...personData,
+                chronologicals: newEvents,
+              });
+            }}
+            onMoveDown={(idx) => {
+              if (idx === personData.chronologicals.length - 1) return;
+              const newEvents = [...personData.chronologicals];
+              const temp = newEvents[idx + 1];
+              newEvents[idx + 1] = newEvents[idx];
+              newEvents[idx] = temp;
+              setPersonData({
+                ...personData,
+                chronologicals: newEvents,
+              });
+            }}
+          />
+        </div>
+      </div>
+      <hr id="editor-hr" />
+      <div id="edit-field" style={{ alignItems: "flex-start" }}>
+        <div id="title">
           <div>タグ</div>
         </div>
         <div id="content">
@@ -596,15 +641,14 @@ const PersonEditor: React.FC = () => {
                 </label>
               );
             })}
-            <div className="add-tag">
-              <input
-                type="text"
-                placeholder="タグ"
-                value={newTag}
-                onChange={(e) => setNewTag(e.target.value.trim())}
-              />
-              <button
-                onClick={() => {
+            <input
+              type="text"
+              placeholder="新規タグ"
+              className="add-tag"
+              value={newTag}
+              onChange={(e) => setNewTag(e.target.value.trim())}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
                   if (
                     newTag !== "" &&
                     tagList.includes(newTag) === false &&
@@ -613,11 +657,10 @@ const PersonEditor: React.FC = () => {
                     setNewTags([...newTags, newTag]);
                     setNewTag("");
                   }
-                }}
-              >
-                追加
-              </button>
-            </div>
+                  e.preventDefault();
+                }
+              }}
+            />
           </div>
         </div>
       </div>
@@ -641,26 +684,25 @@ const PersonEditor: React.FC = () => {
       <div className="editor-last-button-container">
         <button onClick={window.electronAPI?.onEditorClose}>キャンセル</button>
         <button
+          disabled={personData.name.givenName.trim() === ""}
           onClick={() => {
-            if (personData.name.givenName !== "") {
-              const createdTags: string[] = [];
-              const oldTagLen = tagList.length;
-              const copy = [...personData.tagIds];
-              personData.tagIds = personData.tagIds.filter(
-                (id) => id < oldTagLen
-              );
-              let idx = 0;
-              for (const id of copy.filter((id) => id >= oldTagLen)) {
-                createdTags.push(newTags[id - oldTagLen]);
-                personData.tagIds.push(oldTagLen + idx);
-                idx++;
-              }
-              window.electronAPI?.onSendDataFromEditor({
-                personData: personData,
-                newTags: newTags,
-              });
-              window.electronAPI?.onEditorClose();
+            const createdTags: string[] = [];
+            const oldTagLen = tagList.length;
+            const copy = [...personData.tagIds];
+            personData.tagIds = personData.tagIds.filter(
+              (id) => id < oldTagLen
+            );
+            let idx = 0;
+            for (const id of copy.filter((id) => id >= oldTagLen)) {
+              createdTags.push(newTags[id - oldTagLen]);
+              personData.tagIds.push(oldTagLen + idx);
+              idx++;
             }
+            window.electronAPI?.onSendDataFromEditor({
+              personData: personData,
+              newTags: newTags,
+            });
+            window.electronAPI?.onEditorClose();
           }}
         >
           保存

@@ -15,6 +15,7 @@ import {
   SearchResult,
   isAllHalfWidth,
   getPlainText,
+  EventData,
 } from "./FundamentalData";
 
 export interface PersonData {
@@ -29,9 +30,10 @@ export interface PersonData {
   marriageIds: number[];
   aliases: string[];
   tagIds: number[];
-  works: string[];
-  description: string;
+  achievements: string[];
   words: string[];
+  chronologicals: EventData[];
+  description: string;
   isFixedVertically: boolean;
   position: Position;
 }
@@ -45,8 +47,9 @@ export function getEmptyPersonData(id: number, position: Position): PersonData {
     sex: Sex.Male,
     bywords: "",
     aliases: [],
-    works: [],
+    achievements: [],
     words: [],
+    chronologicals: [],
     isFixedVertically: false,
     description: "",
     tagIds: [],
@@ -98,7 +101,11 @@ export function personDataClone(personData: PersonData): PersonData {
     marriageIds: [...personData.marriageIds],
     aliases: [...personData.aliases],
     tagIds: [...personData.tagIds],
-    works: [...personData.works],
+    achievements: [...personData.achievements],
+    chronologicals: personData.chronologicals.map((event) => ({
+      text: event.text,
+      date: { ...event.date },
+    })),
     description: personData.description,
     words: [...personData.words],
     isFixedVertically: personData.isFixedVertically,
@@ -363,9 +370,9 @@ export class Person {
       this.data.birthday?.year !== undefined &&
       FamilyTree.setting.isVertical
     ) {
-      const prefix = this.data.birthday.isBC ? "前" : "";
+      const prefix = this.data.birthday.year < 0 ? "前" : "";
       this.birthText = new HorizontalTextInformation(
-        `${prefix}${this.data.birthday?.year}年 生`,
+        `${prefix}${Math.abs(this.data.birthday?.year)}年 生`,
         FamilyTree.setting.yearFont
       );
     } else {
@@ -375,9 +382,9 @@ export class Person {
       this.data.deathday?.year !== undefined &&
       FamilyTree.setting.isVertical
     ) {
-      const prefix = this.data.deathday.isBC ? "前" : "";
+      const prefix = this.data.deathday.year < 0 ? "前" : "";
       this.deathText = new HorizontalTextInformation(
-        `${prefix}${this.data.deathday?.year}年 没`,
+        `${prefix}${Math.abs(this.data.deathday?.year)}年 没`,
         FamilyTree.setting.yearFont
       );
     } else {
@@ -389,13 +396,11 @@ export class Person {
       FamilyTree.setting.isVertical === false
     ) {
       const birthPrefix =
-        this.data.birthday?.isBC === undefined ||
-        this.data.birthday.isBC === false
+        this.data.birthday?.year === undefined || this.data.birthday.year > 0
           ? ""
           : "BC";
       const deathPrefix =
-        this.data.deathday?.isBC === undefined ||
-        this.data.deathday.isBC === false
+        this.data.deathday?.year === undefined || this.data.deathday.year > 0
           ? ""
           : "BC";
       const birth = birthPrefix + (this.data.birthday?.year ?? "?");
@@ -434,6 +439,10 @@ export class Person {
 
   getDeathday() {
     return this.data.deathday;
+  }
+
+  getChronologicals() {
+    return this.data.chronologicals;
   }
 
   getCenterX(): number {
@@ -514,8 +523,8 @@ export class Person {
     return this.data.tagIds;
   }
 
-  getWorks() {
-    return this.data.works;
+  getAchievements() {
+    return this.data.achievements;
   }
 
   getDescription() {
@@ -625,12 +634,17 @@ export class Person {
     personData.aliases = personData.aliases
       .map((alias) => alias.trim())
       .filter((alias) => alias !== "");
-    personData.works = personData.works
-      .map((work) => work.trim())
-      .filter((work) => work !== "");
+    personData.achievements = personData.achievements
+      .map((achievement) => achievement.trim())
+      .filter((achievement) => achievement !== "");
     personData.words = personData.words
       .map((word) => word.trim())
       .filter((word) => word !== "");
+    personData.chronologicals = personData.chronologicals
+      .map((event) => {
+        return { text: event.text.trim(), date: { ...event.date } };
+      })
+      .filter((event) => event.text !== "");
     personData.description = personData.description.trim();
   }
 
@@ -695,7 +709,7 @@ export class Person {
       if (tag.includes(text)) {
         return {
           field: Field.Tag,
-          text: `タグ:${tag}`,
+          text: `タグ：${tag}`,
         };
       }
     }
@@ -944,17 +958,34 @@ export class Person {
       }
     }
 
-    for (const work of this.data.works) {
-      const plainWork = getPlainText(work);
+    for (const archievement of this.data.achievements) {
+      const plainWork = getPlainText(archievement);
       const idx = plainWork.indexOf(text);
       if (idx !== -1) {
         const additional = 3;
-        const prefix = idx - additional > 0 ? "..." : "";
+        const prefix = idx - additional > 0 ? "……" : "";
         const postfix =
-          idx + text.length + additional !== plainWork.length - 1 ? "..." : "";
+          idx + text.length + additional !== plainWork.length - 1 ? "……" : "";
         return {
-          field: Field.Work,
-          text: `功績：${prefix}${plainWork.slice(
+          field: Field.Achievement,
+          text: `業績：${prefix}${plainWork.slice(
+            Math.max(idx - additional, 0),
+            idx + text.length + 3
+          )}${postfix}`,
+        };
+      }
+    }
+    for (const event of this.data.chronologicals) {
+      const plainWord = getPlainText(event.text);
+      const idx = plainWord.indexOf(text);
+      if (idx !== -1) {
+        const additional = 3;
+        const prefix = idx - additional > 0 ? "……" : "";
+        const postfix =
+          idx + text.length + additional !== plainWord.length - 1 ? "……" : "";
+        return {
+          field: Field.Desciption,
+          text: `略年表：${prefix}${plainWord.slice(
             Math.max(idx - additional, 0),
             idx + text.length + 3
           )}${postfix}`,
@@ -966,12 +997,12 @@ export class Person {
       const idx = plainWord.indexOf(text);
       if (idx !== -1) {
         const additional = 3;
-        const prefix = idx - additional > 0 ? "..." : "";
+        const prefix = idx - additional > 0 ? "……" : "";
         const postfix =
-          idx + text.length + additional !== plainWord.length - 1 ? "..." : "";
+          idx + text.length + additional !== plainWord.length - 1 ? "……" : "";
         return {
           field: Field.Desciption,
-          text: `言葉・句${prefix}${plainWord.slice(
+          text: `言葉・句：${prefix}${plainWord.slice(
             Math.max(idx - additional, 0),
             idx + text.length + 3
           )}${postfix}`,
@@ -983,10 +1014,10 @@ export class Person {
     const idx = plainDescription.indexOf(text);
     if (idx !== -1) {
       const additional = 3;
-      const prefix = idx - additional > 0 ? "..." : "";
+      const prefix = idx - additional > 0 ? "……" : "";
       const postfix =
         idx + text.length + additional !== plainDescription.length - 1
-          ? "..."
+          ? "……"
           : "";
       return {
         field: Field.Desciption,

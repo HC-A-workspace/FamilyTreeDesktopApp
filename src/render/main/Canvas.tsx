@@ -338,16 +338,22 @@ const App: React.FC = () => {
         offsetRef.current,
         scaleRef.current
       );
-      const offsetPersonId = familyTree.getNextPersonId();
-      const offsetMarriageId = familyTree.getNextMarriageId();
-      const offsetSpotId = familyTree.getNextSpotId();
+      const offsetPersonId = newFamilyTree.getNextPersonId();
+      const offsetMarriageId = newFamilyTree.getNextMarriageId();
+      const offsetSpotId = newFamilyTree.getNextSpotId();
+      const offsetTagId = newFamilyTree.getTags().length;
       const offsetPosition: Position = {
         x: unscaledCanvasCenter.x - center.x,
-        y: unscaledCanvasCenter.y - center.y,
+        y: 0,
       };
 
       for (const [, person] of newFamilyTree.getPersonMap()) {
-        person.addOffset(offsetPosition, offsetPersonId, offsetMarriageId, 0);
+        person.addOffset(
+          offsetPosition,
+          offsetPersonId,
+          offsetMarriageId,
+          offsetTagId
+        );
         familyTree.getPersonMap().set(person.getId(), person);
         familyTree.nextPersonIdCountUp();
       }
@@ -361,6 +367,7 @@ const App: React.FC = () => {
         familyTree.getSpots().set(spot.getId(), spot);
         familyTree.nextSpotIdCountUp();
       }
+      familyTree.getTags().push(...newFamilyTree.getTags());
 
       forceUpdate();
     }

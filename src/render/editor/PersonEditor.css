@@ -2,6 +2,7 @@
   position: relative;
   background-color: rgba(243, 152, 77, 0.12);
   font-size: large;
+  margin: 0;
 }
 
 #region-title {
@@ -15,6 +16,7 @@
   font-size: 1.5em;
   text-align: center;
   font-weight: bold;
+  user-select: none;
 }
 
 #edit-field {
@@ -34,6 +36,7 @@
   font-size: 1.1em;
   padding: 0.2em 0.3em;
   font-weight: bold;
+  user-select: none;
 }
 
 #edit-field > #content {
@@ -47,6 +50,7 @@
   font-weight: normal;
   padding: 0.2em 0.3em;
   width: fit-content;
+  user-select: none;
 }
 
 input#kana {
@@ -105,6 +109,7 @@ hr#editor-hr {
 
 #edit-year-container > #slash {
   font-size: 1.5em;
+  user-select: none;
 }
 
 .bywords-editor {
@@ -147,11 +152,28 @@ hr#editor-hr {
   padding: 0.2em;
 }
 
+#list-input > label > input[type="number"] {
+  font-size: 1.1em;
+  border: 1px solid black;
+  padding: 0.2em;
+  max-width: 2.5em;
+  text-align: right;
+  margin-right: 0.2em;
+  margin-left: 0.2em;
+}
+
+#list-input > label > input[type="number"]::-webkit-outer-spin-button,
+#list-input > label > input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+}
+
 #list-input > button {
   width: fit-content;
   font-size: 1em;
   border: 1px solid black;
   background-color: white;
+  border-radius: 10px;
+  user-select: none;
 }
 
 button#list-add-button {
@@ -159,12 +181,16 @@ button#list-add-button {
   font-size: 1em;
   border: 1px solid black;
   background-color: white;
+  border-radius: 10px;
+  user-select: none;
 }
 
 .tag-editor {
+  font-size: 1em;
   display: flex;
   flex-wrap: wrap;
   gap: 0.4em;
+  align-items: center;
 }
 
 #tag-checkbox {
@@ -180,20 +206,12 @@ button#list-add-button {
 }
 
 .add-tag {
-  display: flex;
-  gap: 0.1em;
-  align-items: center;
-  background-color: white;
+  font-size: 1em;
   border: 1px solid black;
-}
-
-.add-tag > input {
-  border: none;
-  width: 5em;
-}
-
-.add-tag > input:focus {
-  outline: none;
+  border-radius: 10px;
+  padding: 0.1em 0.3em;
+  width: 6em;
+  height: fit-content;
 }
 
 .editor-last-button-container {
@@ -210,4 +228,5 @@ button#list-add-button {
   background-color: white;
   border: 1px solid black;
   margin: 0.5em;
+  border-radius: 10px;
 }

@@ -16,27 +16,9 @@ export const SexLabel: Record<Sex, string> = {
 };
 
 export interface Date {
-  isBC: boolean;
   year?: number;
   month?: number;
   day?: number;
-}
-
-export function dateToString(date: Date): string {
-  let str: string = "";
-  if (date.isBC !== false) {
-    str = str + "紀元前";
-  }
-  if (date.year !== undefined) {
-    str = str + date.year + "年";
-  }
-  if (date.month != undefined) {
-    str = str + date.month + "月";
-  }
-  if (date.day !== undefined) {
-    str = str + date.day + "日";
-  }
-  return str;
 }
 
 export interface Position {
@@ -94,6 +76,11 @@ export function getNameStyle(name: Name): NameStyle {
   return NameStyle.OnlyGivenName;
 }
 
+export interface EventData {
+  text: string;
+  date?: Date;
+}
+
 export interface ProfileData {
   person: PersonData;
   parents: PersonData[];
@@ -139,9 +126,10 @@ export const Field = {
   Parent: 6,
   Child: 7,
   Brother: 8,
-  Work: 9,
+  Achievement: 9,
   Word: 10,
-  Desciption: 11,
+  Chronological: 11,
+  Desciption: 12,
 } as const;
 
 export type Field = (typeof Field)[keyof typeof Field];

@@ -14,7 +14,7 @@ const SingleItem: React.FC<SingleItemProps> = ({
   onDelete,
 }) => {
   return (
-    <div id="list-input" style={{ display: "flex" }}>
+    <div id="list-input">
       <input
         type="text"
         value={item}

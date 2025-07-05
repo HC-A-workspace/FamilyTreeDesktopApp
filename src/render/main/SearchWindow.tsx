@@ -27,7 +27,6 @@ const SearchWindow: React.FC<SearchWindowProperties> = ({
 }) => {
   const [texts, setTexts] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
-  const maxItems = 10;
 
   useEffect(() => {
     if (texts === "") {
@@ -39,7 +38,7 @@ const SearchWindow: React.FC<SearchWindowProperties> = ({
           result: [...r.result],
         };
       });
-      setResults(res.splice(0, maxItems));
+      setResults(res);
     }
   }, [texts]);
 
@@ -52,23 +51,25 @@ const SearchWindow: React.FC<SearchWindowProperties> = ({
         onChange={(e) => setTexts(e.target.value)}
       />
       {results.length > 0 && (
-        <ul className="result">
-          {results.map((result, id) => {
-            const res = displayTextOfResult(result);
-            return (
-              <li
-                key={id}
-                onClick={() => {
-                  onDecide(result.type);
-                  setTexts("");
-                }}
-              >
-                <div id="result-text">{res.text}</div>
-                <div id="result-explain">{res.explain}</div>
-              </li>
-            );
-          })}
-        </ul>
+        <div className="search-result-div">
+          <ul className="result">
+            {results.map((result, id) => {
+              const res = displayTextOfResult(result);
+              return (
+                <li
+                  key={id}
+                  onClick={() => {
+                    onDecide(result.type);
+                    setTexts("");
+                  }}
+                >
+                  <div id="result-text">{res.text}</div>
+                  <div id="result-explain">{res.explain}</div>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
       )}
     </div>
   );
